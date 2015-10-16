@@ -50,12 +50,14 @@
             querystring.update(_varmap);
             k(null, 1);
         },
-        add_edit_control: function(context_id, label, k) {
-            var input = $('<label type="text">' + label + '<input></input></label>');
+        add_edit_control: function(context_id, desc, value, k) {
+            var input = $('<input type="text"></input>');
+            var label = $('<label>' + desc + '</label>').append(input);
+            input.val(value);
             input.change(function(val) {
                 alert(input.val());
             });
-            RCloud.session.selection_out(context_id, input);
+            RCloud.session.selection_out(context_id, label);
             k();
         }
     };

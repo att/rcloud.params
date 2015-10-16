@@ -4,5 +4,5 @@ param <- function(var) {
   if(!is.null(val)) {
     assign(name, val, envir=globalenv());
   }
-  param.caps$add_edit_control(Rserve.context(), paste0(name, ':&nbsp'))
+  param.caps$add_edit_control(Rserve.context(), paste0(name, ':&nbsp'), val)
 }
