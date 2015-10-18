@@ -66,6 +66,15 @@
             if(k)
                 k(null, 1);
         },
+        error_highlight(names, whether, k) {
+            if(!_.isArray(names))
+                names = [names];
+            var sel = $(names.map(function(n) { return '#' + input_id(n); }).join(',')),
+                border = whether ? 'red 1px solid' : '';
+            sel.css('border', border);
+            if(k)
+                k(null, 1);
+        },
         add_edit_control: function(context_id, desc, name, def, callback, k) {
             var input = $('<input type="text" id="' + input_id(name) + '"></input>');
             var label = $('<label>' + desc + '</label>').append(input);
@@ -76,7 +85,7 @@
             input.change(function() {
                 var val = input.val().trim();
                 if(val === '') val = undefined;
-                result.set_query(name);
+                result.set_query(name, val);
             });
             RCloud.session.selection_out(context_id, label);
             _needed.push(name);
@@ -85,13 +94,13 @@
         wait_submit: function(context_id, k) {
             var submit = $('<input type="button" value="Submit" />');
             submit.click(function() {
-                if(_needed.every(have_value))
+                var good_bad = _.partition(_needed, have_value);
+                result.error_highlight(good_bad[0], false);
+                if(!good_bad[1].length)
                     k(_.pick(_varmap, _needed));
                 else {
-                    var first_empty = _.find(_needed, function(n) {
-                        return !have_value(n);
-                    });
-                    result.focus(first_empty);
+                    result.error_highlight(good_bad[1], true);
+                    result.focus(good_bad[1][0]);
                 }
             });
             RCloud.session.selection_out(context_id, submit);
