@@ -100,8 +100,10 @@
             submit.click(function() {
                 var good_bad = _.partition(_needed, have_value);
                 result.error_highlight(good_bad[0], false);
-                if(!good_bad[1].length)
+                if(!good_bad[1].length) {
+                    submit.attr('disabled', 'disabled');
                     k(_.pick(_varmap, _needed));
+                }
                 else {
                     result.error_highlight(good_bad[1], true);
                     result.focus(good_bad[1][0]);
