@@ -75,7 +75,7 @@
             if(k)
                 k(null, 1);
         },
-        add_edit_control: function(context_id, desc, name, def, val, callback, k) {
+        add_edit_control: function(context_id, desc, name, def, val, type, callback, k) {
             var input = $('<input type="text" id="' + input_id(name) + '"></input>');
             var label = $('<label>' + desc + '</label>').append(input);
             if(val !== null) {
