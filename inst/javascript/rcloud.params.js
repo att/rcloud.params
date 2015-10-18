@@ -59,7 +59,7 @@
             var label = $('<label>' + desc + '</label>').append(input);
             input.val(value);
             input.change(function(val) {
-                callback(input.val());
+                callback(input.val(), function() {});
             });
             RCloud.session.selection_out(context_id, label);
             k(null, 1);

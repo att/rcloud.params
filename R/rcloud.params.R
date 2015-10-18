@@ -1,6 +1,7 @@
 needed.params <- NULL
 lookup <- function(name) {
-  mget(name, envir=globalenv(), ifnotfound=NULL)
+  vals <- mget(name, envir=globalenv(), ifnotfound=NA)
+  vals[[name]]
 }
 param <- function(var) {
   name <- deparse(substitute(var))
@@ -9,6 +10,8 @@ param <- function(var) {
     assign(name, val, envir=globalenv());
   } else {
     val = lookup(name)
+    if(is.na(val))
+      val <- NULL
   }
   callback <- function(val2) {
     assign(name, val2, envir=globalenv());
