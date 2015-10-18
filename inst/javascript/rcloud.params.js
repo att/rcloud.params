@@ -40,6 +40,10 @@
 
     var _varmap;
 
+    function input_id(name) {
+        return 'rcloud-params-' + name;
+    }
+
     return {
         init: function(k) {
             _varmap = querystring.parse();
@@ -50,15 +54,29 @@
             querystring.update(_varmap);
             k(null, 1);
         },
-        add_edit_control: function(context_id, desc, value, k) {
-            var input = $('<input type="text"></input>');
+        add_edit_control: function(context_id, desc, name, value, callback, k) {
+            var input = $('<input type="text" id="#' + input_id(name) + '"></input>');
             var label = $('<label>' + desc + '</label>').append(input);
             input.val(value);
             input.change(function(val) {
-                alert(input.val());
+                callback(input.val());
             });
             RCloud.session.selection_out(context_id, label);
-            k();
+            k(null, 1);
+        },
+        wait_submit: function(context_id, callback, k) {
+            var submit = $('<input type="button" value="Submit" />');
+            submit.click(function() {
+                callback(function(err, res) {
+                    if(res)
+                        k();
+                });
+            });
+            RCloud.session.selection_out(context_id, submit);
+        },
+        focus: function(name, k) {
+            $('#' + input_id(name)).focus();
+            k(null, 1);
         }
     };
 })()) /*jshint -W033 */ // this is an expression not a statement
