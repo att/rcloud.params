@@ -75,10 +75,14 @@
             if(k)
                 k(null, 1);
         },
-        add_edit_control: function(context_id, desc, name, def, callback, k) {
+        add_edit_control: function(context_id, desc, name, def, val, callback, k) {
             var input = $('<input type="text" id="' + input_id(name) + '"></input>');
             var label = $('<label>' + desc + '</label>').append(input);
-            if(def !== null) {
+            if(val !== null) {
+                _varmap[name] = val;
+                input.val(val);
+            }
+            else if(def !== null) {
                 _defaults[name] = def;
                 input.val(def);
             }

@@ -4,19 +4,18 @@ lookup <- function(name) {
 }
 param <- function(var) {
   name <- deparse(substitute(var))
+  def = lookup(name)
+  if(is.na(def))
+      def <- NULL
   val <- param.QS[[name]]
   if(!is.null(val)) {
     assign(name, val, envir=globalenv());
-  } else {
-    val = lookup(name)
-    if(is.na(val))
-      val <- NULL
   }
   callback <- function(val2) {
     assign(name, val2, envir=globalenv());
   }
   param.caps$add_edit_control(Rserve.context(), paste0(name, ':&nbsp'), name,
-                              val, rcloud.support:::make.oc(callback))
+                              def, val, rcloud.support:::make.oc(callback))
   invisible(TRUE)
 }
 
