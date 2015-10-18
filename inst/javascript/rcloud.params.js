@@ -38,39 +38,48 @@
         };
     })();
 
-    var _varmap;
+    var _varmap, _defaults = {}, _needed = [];
 
     function input_id(name) {
         return 'rcloud-params-' + name;
     }
-
-    return {
+    var result = {
         init: function(k) {
             _varmap = querystring.parse();
             k(_varmap);
         },
         set_query: function(key, value, k) {
-            _varmap[key] = value;
+            if(value !== undefined && _defaults[key] !== value)
+                _varmap[key] = value;
+            else
+                delete _varmap[key];
             querystring.update(_varmap);
             k(null, 1);
         },
-        add_edit_control: function(context_id, desc, name, value, callback, k) {
+        add_edit_control: function(context_id, desc, name, def, callback, k) {
             var input = $('<input type="text" id="#' + input_id(name) + '"></input>');
             var label = $('<label>' + desc + '</label>').append(input);
-            input.val(value);
-            input.change(function(val) {
-                callback(input.val());
+            if(def !== null) {
+                _defaults[name] = def;
+                input.val(def);
+            }
+            input.change(function() {
+                var val = input.val().trim();
+                if(val === '') val = undefined;
+                result.set_query(name, val, function() {});
             });
             RCloud.session.selection_out(context_id, label);
+            _needed.push(name);
             k(null, 1);
         },
-        wait_submit: function(context_id, callback, k) {
+        wait_submit: function(context_id, k) {
             var submit = $('<input type="button" value="Submit" />');
             submit.click(function() {
-                callback(function(err, res) {
-                    if(res)
-                        k();
-                });
+                if(_needed.every(function(n) {
+                    return _varmap[n] != undefined ||
+                        _defaults[n] !== undefined;
+                }))
+                    k(_.pick(_varmap, _needed));
             });
             RCloud.session.selection_out(context_id, submit);
         },
@@ -79,4 +88,5 @@
             k(null, 1);
         }
     };
+    return result;
 })()) /*jshint -W033 */ // this is an expression not a statement
