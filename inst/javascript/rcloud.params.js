@@ -91,7 +91,7 @@
                 if(val === '') val = undefined;
                 result.set_query(name, val);
             });
-            RCloud.session.selection_out(context_id, label);
+            RCloud.session.invoke_context_callback('selection_out', context_id, label);
             _needed.push(name);
             k(null, 1);
         },
@@ -109,7 +109,7 @@
                     result.focus(good_bad[1][0]);
                 }
             });
-            RCloud.session.selection_out(context_id, submit);
+            RCloud.session.invoke_context_callback('selection_out', context_id, submit);
         }
     };
     return result;
