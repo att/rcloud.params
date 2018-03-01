@@ -9,6 +9,7 @@
     });
 
     // stolen from dc.graph.js, could be made its own tiny library
+    // Used to retrive and update url
     var querystring = (function() {
         return {
             parse: function() {
@@ -38,7 +39,7 @@
         };
     })();
 
-    var _varmap, _defaults = {}, _needed = [];
+    var _varmap, _varClass = [], _defaults = {}, _needed = [];
 
     function input_id(name) {
         return 'rcloud-params-' + name;
@@ -52,10 +53,13 @@
             _varmap = querystring.parse();
             k(null, _varmap);
         },
-        set_query: function(key, value, k) {
-            if(value !== undefined && _defaults[key] !== value)
+        set_query: function(key, value, varClass, k) {
+            if(value !== undefined && _defaults[key] !== value) {
+                //_varmap[key] = {"val" : value, "class": varClass};
                 _varmap[key] = value;
-            else
+                _varClass[key] = varClass;
+            }
+              else
                 delete _varmap[key];
             querystring.update(_varmap);
             if(k)
@@ -74,35 +78,45 @@
             sel.css('border', border);
             if(k)
                 k(null, 1);
-        },
-        add_edit_control: function(context_id, desc, name, def, val, type, callback, k) {
-            var input = $('<input type="text" id="' + input_id(name) + '"></input>');
-            var label = $('<label>' + desc + '</label>').append(input);
+        },                
+  
+        add_edit_control: function(context_id, desc, name, def, val, selectTag, labelTag, varClass, callback, k) {
+   
+            var input = $(selectTag);
+            var label = $(labelTag).append(input);
             if(val !== null) {
-                _varmap[name] = val;
+                _varmap[name] = val ;//{"val" : val, "class": varClass};
+                _varClass[name] = varClass;
                 input.val(val);
             }
             else if(def !== null) {
-                _defaults[name] = def;
+                _defaults[name] = def; //{"val" : def, "class": varClass};
+                 _varClass[name] = varClass;
                 input.val(def);
             }
             input.change(function() {
                 var val = input.val().trim();
                 if(val === '') val = undefined;
-                result.set_query(name, val);
+                result.set_query(name, val, varClass);      
             });
             RCloud.session.invoke_context_callback('selection_out', context_id, label);
             _needed.push(name);
+         
             k(null, 1);
         },
         wait_submit: function(context_id, k) {
             var submit = $('<input type="button" value="Submit" />');
             submit.click(function() {
+             
                 var good_bad = _.partition(_needed, have_value);
+               
                 result.error_highlight(good_bad[0], false);
                 if(!good_bad[1].length) {
                     submit.attr('disabled', 'disabled');
-                    k(_.pick(_varmap, _needed));
+                    var sendToR = _.pick(_varmap, _needed);
+                    // attach _varClass somewhere here
+                 var myVarDel = _varClass;
+                    k(sendToR);
                 }
                 else {
                     result.error_highlight(good_bad[1], true);

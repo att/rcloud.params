@@ -1,6 +1,6 @@
 Package: rcloud.params
 Title: Notebook Parameters for RCloud
-Version: 0.0.1
+Version: 0.0.2
 Author: Gordon Woodhull <gordon@research.att.com>, Anatoliy Gorskiy <anatoliy@research.att.com>
 Maintainer: Gordon Woodhull <gordon@research.att.com>, Anatoliy Gorskiy <anatoliy@research.att.com>
 Description: rcloud.params provides a way to parameterize notebooks via query parameters and UI elements
