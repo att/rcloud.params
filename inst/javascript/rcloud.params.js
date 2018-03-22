@@ -48,6 +48,23 @@
         return _varmap[name] != undefined ||
             _defaults[name] !== undefined;
     }
+  combine = (obj1, obj2) => {
+	let returnObject = {},
+  		objects = _.chain(_.map(Object.keys(obj1), (key) => {
+  	return [obj1[key], obj2[key]];
+  })).map((items, index) => {
+  	return {
+    	value: items[0],
+      type: items[1]
+    };
+  }).value();
+
+	_.each(Object.keys(obj1), (key, index) => {
+  	returnObject[key] = objects[index];
+  });
+ 
+ 	return returnObject;
+};
     var result = {
         init: function(k) {
             _varmap = querystring.parse();
@@ -55,7 +72,6 @@
         },
         set_query: function(key, value, varClass, k) {
             if(value !== undefined && _defaults[key] !== value) {
-                //_varmap[key] = {"val" : value, "class": varClass};
                 _varmap[key] = value;
                 _varClass[key] = varClass;
             }
@@ -80,32 +96,33 @@
                 k(null, 1);
         },                
   
-        add_edit_control: function(context_id, desc, name, def, val, selectTag, labelTag, varClass, callback, k) {
+        add_edit_control: function(context_id, desc, name, def, val, inputTag, labelTag, varClass, callback, k) {
    
-            var input = $(selectTag);
+            var input = $(inputTag);
             var label = $(labelTag).append(input);
             if(val !== null) {
-                _varmap[name] = val ;//{"val" : val, "class": varClass};
+                _varmap[name] = val ;
                 _varClass[name] = varClass;
                 input.val(val);
             }
             else if(def !== null) {
-                _defaults[name] = def; //{"val" : def, "class": varClass};
+                _defaults[name] = def; 
                  _varClass[name] = varClass;
                 input.val(def);
             }
-            input.change(function() {
-                var val = input.val().trim();
+            label.on('change', function() {
+                var val = label[0].childNodes[1].value.trim(); //label.val().trim();
                 if(val === '') val = undefined;
                 result.set_query(name, val, varClass);      
             });
-            RCloud.session.invoke_context_callback('selection_out', context_id, label);
+            RCloud.session.invoke_context_callback('selection_out', context_id, label); 
             _needed.push(name);
-         
-            k(null, 1);
+
+          k(null, label.attr('id'));
+           //k(null, label.html());
         },
         wait_submit: function(context_id, k) {
-            var submit = $('<input type="button" value="Submit" />');
+            var submit = $('<input id = "rcloud-params-submit" type="button" value="Submit" />');
             submit.click(function() {
              
                 var good_bad = _.partition(_needed, have_value);
@@ -113,10 +130,8 @@
                 result.error_highlight(good_bad[0], false);
                 if(!good_bad[1].length) {
                     submit.attr('disabled', 'disabled');
-                    var sendToR = _.pick(_varmap, _needed);
-                    // attach _varClass somewhere here
-                 var myVarDel = _varClass;
-                    k(sendToR);
+                  var varValues = _.pick(_varmap, _needed);
+                  k(combine(varValues, _varClass));
                 }
                 else {
                     result.error_highlight(good_bad[1], true);

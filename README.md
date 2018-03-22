@@ -12,7 +12,7 @@ to generate the submit button:
 ```{r}
 library(rcloud.params)
 x <- 1
-param(x)
+numericInput(x)
 submit()
 ```
 
@@ -27,7 +27,7 @@ will be successful:
 
 ```{r}
 library(rcloud.params)
-param(y)
+textInput(y)
 submit()
 ```
 
