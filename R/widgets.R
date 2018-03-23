@@ -6,11 +6,11 @@
 textInput <- function(var){
   name <- deparse(substitute(var))
   inputTag <- paste0("<input type= 'text' id='", paste0("rcloud-params-", name),  "'></input>") 
-  #inputTag <- as.character(tags$input(type = "text", id = paste0("rcloud-params-", name)))
+  
   param(inputTag, name, varClass = "character")
 }
 
-#' Create date input
+#' Create select input
 #'
 #' Creates HTML for a select dropdown input to pass to the param function
 #' @export
@@ -46,7 +46,7 @@ dateInput <- function(var, value = var, format = "yyyy-mm-dd"){
   param(inputTag, name, varClass = "Date")
 }
 
-#' Create date input
+#' Create numeric input
 #'
 #' Creates HTML for a numeric value input to pass to the param function
 #' @export
