@@ -16,7 +16,7 @@ lookup <- function(name) {
 param <- function(inputTag, name, varClass) {
 
   def <- lookup(name)
-  if(is.na(def)) 
+  if(any(is.na(def))) 
     def <- NULL
 
   labelTag <- paste0('<label id = ', paste0("rcloud-params-lab-", name),'>', paste0(name, ':&nbsp') , '</label>')

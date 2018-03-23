@@ -48,6 +48,16 @@
         return _varmap[name] != undefined ||
             _defaults[name] !== undefined;
     }
+    function get_input_value(label){ // takes jquery object and extracts value
+     
+              if(label[0].childNodes[1].nodeName.toLowerCase() == 'select'){
+                // if a select get all selected objects
+                return $('#' + label[0].childNodes[1].id + ' option:selected').map(function() {return $(this).val();}).get();
+              } else{
+                return label[0].childNodes[1].value.trim(); 
+              }
+    }
+    
   combine = (obj1, obj2) => {
 	let returnObject = {},
   		objects = _.chain(_.map(Object.keys(obj1), (key) => {
@@ -111,7 +121,9 @@
                 input.val(def);
             }
             label.on('change', function() {
-                var val = label[0].childNodes[1].value.trim(); //label.val().trim();
+           
+                var val = get_input_value(label);
+                
                 if(val === '') val = undefined;
                 result.set_query(name, val, varClass);      
             });
