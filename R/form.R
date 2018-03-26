@@ -1,12 +1,13 @@
-## Form
-## Allows users to enter param widgets with html tools all in one call
-## eg. theDate <- "2018-03-20"
-##     myDiv(h1("Start"), textInput(x), numericInput(y), dateInput(theDate), h1("End"))
-##     submit()
+#' Create parm widget form 
+#' @description  Allows users to enter param widgets with html tools all in one call
+#' @example myDiv(h1("Start"), textInput(x), numericInput(y), dateInput(theDate), h1("End"))
+#'          submit()
+#' @export
 
 paramDiv <- function(..., byRow = FALSE){
-  
-  listNames <- as.character(match.call())[-1]
+
+  listNames <- as.character(match.call())[-c(1, length(match.call()))] # remove call and byRow
+
   myDiv <- vector(length = length(listNames))
   
   if(byRow){

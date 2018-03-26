@@ -3,12 +3,29 @@
 #' Creates HTML for a textbox input to pass to the param function
 #' @export
 
-textInput <- function(var){
+textInput <- function(var, value = NA){
   name <- deparse(substitute(var))
-  inputTag <- paste0("<input type= 'text' id='", paste0("rcloud-params-", name),  "'></input>") 
+  if(exists(name)) value <- var
+
+  inputTag <- paste0("<input type= 'text' id='", paste0("rcloud-params-", name), "'></input>") 
   
-  param(inputTag, name, varClass = "character")
+  param(inputTag, name, varClass = "character", inputVal = value)
 }
+
+#' Create numeric input
+#'
+#' Creates HTML for a numeric value input to pass to the param function
+#' @export
+
+numericInput <- function(var, value = NA, min = NA, max = NA, step = NA){
+  name <- deparse(substitute(var))
+  if(exists(name)) value <- var  # If variable defined value argument is over-ridden. 
+  
+  inputTag <- paste0("<input type= 'number' id='", paste0("rcloud-params-", name),  
+                     "' min = '", min, "' max = '", max, "' step = '", step,"'></input>") 
+  param(inputTag, name, varClass = "numeric", inputVal = value)
+}
+
 
 #' Create select input
 #'
@@ -36,34 +53,32 @@ selectInput <- function(var, choices, selected = '', multiple = FALSE){
 
 #' Create date input
 #'
-#' Creates HTML for a clickable calender input that is passed to the param function
+#' Creates HTML for a clickable calender input that is passed to the param function.
+#' If var is already defined, calander will be prepoulated with existing date (value ignored) 
+#' 
+#' @param var varible name defined or undefined
+#' @param value Either a date object or a string in yyyy-mm-dd format
 #' @export
 
-dateInput <- function(var, value = var, format = "yyyy-mm-dd"){
+dateInput <- function(var, value = NA){
   name <- deparse(substitute(var))
 
-  #if (inherits(value, "Date"))  value <- format(value, "%Y-%m-%d")
+  if(exists(name)) value <- var
+  if (inherits(value, "Date"))  value <- format(value, "%Y-%m-%d")
   
   inputTag <- paste0("<input type='date' id='", paste0("rcloud-params-", name),
-                     "' value = '", as.character(value), "' data-date-format='yyyy-mm-dd' >")
+                     "' data-date-format='yyyy-mm-dd' >")
  
-  param(inputTag, name, varClass = "Date")
+  param(inputTag, name, varClass = "Date", inputVal = as.character(value))
 }
 
-#' Create numeric input
+
+#' Create slider input
 #'
 #' Creates HTML for a numeric value input to pass to the param function
 #' @export
 
-numericInput <- function(var, min = NA, max = NA, step = NA){
-  name <- deparse(substitute(var))
-  
-   inputTag <- paste0("<input type= 'number' id='", paste0("rcloud-params-", name),  "' min = '", min,
-                     "' max = '", max, "' step = '", step,"'></input>") 
-  param(inputTag, name, varClass = "numeric")
-}
-
-sliderInput <- function(var, min = NA, max = NA, value = NA){
+sliderInput <- function(var, value = NA, min = NA, max = NA){
   name <- deparse(substitute(var))
 
   
@@ -75,7 +90,7 @@ sliderInput <- function(var, min = NA, max = NA, value = NA){
 
   inputTag <- paste0("<span>", min, "</span>", 
                      "<input type= 'range'  id='", paste0("rcloud-params-", name),  
-                          "' min ='", min, "' max = '", max, "' value = '", value, "'></input>", 
+                          "' min ='", min, "' max = '", max, "'></input>", 
                      "<span>", max, "</span>")
   
   param(inputTag, name, varClass = "numeric", inputVal = value)
