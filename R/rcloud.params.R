@@ -13,11 +13,13 @@ lookup <- function(name) {
 #' @param name varibale name
 #' @param varClass class of variable 
 
-param <- function(inputTag, name, varClass) {
+param <- function(inputTag, name, varClass, inputVal = NA) {
 
   def <- lookup(name)
   if(any(is.na(def))) 
     def <- NULL
+
+    
 
   labelTag <- paste0('<label id = ', paste0("rcloud-params-lab-", name),'>', paste0(name, ':&nbsp') , '</label>')
   
@@ -26,10 +28,13 @@ param <- function(inputTag, name, varClass) {
 
     assign(name, val, envir=globalenv()); # If not in querySting assign to globalEnv
   }
+  if(is.null(val) & !is.na(inputVal))
+    val <- inputVal    # If variable is undefined but user has set a value in widget, use this
+  
   callback <- function(val2) {
     assign(name, val2, envir=globalenv());
   } # make call back ocap so variable created in js side can be assigned back to R
-  
+
 
   input.caps$add_edit_control(Rserve.context(), paste0(name, ':&nbsp'), name,
                             def, val, inputTag, labelTag, varClass, rcloud.support:::make.oc(callback))
