@@ -115,11 +115,13 @@
                 _varmap[name] = val ;
                 _varClass[name] = varClass;
                 input.val(val);
+                result.set_query(name, val, varClass); 
             }
             else if(def !== null) {
                 _defaults[name] = def; 
                  _varClass[name] = varClass;
                 input.val(def);
+                result.set_query(name, val, varClass); 
             }
             label.on('change', function() {
            

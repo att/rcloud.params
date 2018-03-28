@@ -6,7 +6,9 @@
 
 paramDiv <- function(..., byRow = FALSE){
 
-  listNames <- as.character(match.call())[-c(1, length(match.call()))] # remove call and byRow
+  listNames <- as.character(match.call())[-1]  # remove call 
+  if(listNames[length(listNames)] %in% c(TRUE, FALSE))
+    listNames <- listNames[-length(listNames)] # remove byRow arg 
 
   myDiv <- vector(length = length(listNames))
   
