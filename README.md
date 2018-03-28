@@ -32,6 +32,28 @@ submit()
 ```
 
 The variable will created during `submit`. A non-defaulted value can also be specified as
-`NA`.
+`NA` or assigned using the widget.
 
+```{r}
+library(rcloud.params)
+textInput(y, value = "Hello World")
+submit()
+```
+
+Multiple variables can be assigned using one submit() either by individually listing
+or using the paramDiv() function to diaply with inline html
+
+```{r}
+library(rcloud.params)
+library(htmltools)
+
+paramDiv(h1("Start"), 
+    textInput(x), 
+    numericInput(y), 
+    dateInput(theDate), 
+    h1("End"), 
+    byRow = TRUE
+    )
+submit()
+```
 

@@ -19,13 +19,11 @@ param <- function(inputTag, name, varClass, inputVal = NA) {
   if(any(is.na(def))) 
     def <- NULL
 
-    
-
   labelTag <- paste0('<label id = ', paste0("rcloud-params-lab-", name),'>', paste0(name, ':&nbsp') , '</label>')
   
   val <- input.QS[[name]] # Pull from query string if there ?
+  
   if(!is.null(val)) {
-
     assign(name, val, envir=globalenv()); # If not in querySting assign to globalEnv
   }
   if(is.null(val) & !is.na(inputVal))
