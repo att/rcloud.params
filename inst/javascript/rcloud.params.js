@@ -41,12 +41,13 @@
     function get_input_value(label) { // takes jquery object and extracts value
 
         if (label[0].childNodes[1].nodeName.toLowerCase() == 'select') {
-            // if a select get all selected objects
-            return $('#' + label[0].childNodes[1].id + ' option:selected').map(function () { return $(this).val(); }).get();
-        } else {
+          // if a select get all selected objects
+          return $('#' + label[0].childNodes[1].id + ' option:selected').map(function () { return $(this).val(); }).get();
+          }else if(label[0].childNodes[1].type){
+            return label[0].querySelector("[id^='rcloud-params-']").checked;	
+          } else {
             return label[0].querySelector("[id^='rcloud-params-']").value.trim();
-
-        }
+            }
     }
     // Used to combine value with class to push back to R  
     combine = (obj1, obj2) => {
@@ -155,6 +156,7 @@
                 result.set_query(name, val, varClass);
             });
             RCloud.session.invoke_context_callback('selection_out', context_id, label);
+           
             _needed.push(name);
 
             k(null, label.attr('id'));      
@@ -169,6 +171,7 @@
                 if (!good_bad[1].length) {
                     submit.attr('disabled', 'disabled');
                     var varValues = _.pick(_varmap, _needed);
+                     _needed = [];  // clear _needed  only current variables need to be called back to r 
                     k(combine(varValues, _varClass));
                 } else {
                     result.error_highlight(good_bad[1], true);

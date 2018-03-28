@@ -95,3 +95,19 @@ sliderInput <- function(var, value = NA, min = NA, max = NA){
   
   param(inputTag, name, varClass = "numeric", inputVal = value)
 }
+
+#' Create checkbox input
+#'
+#' Creates HTML for a checkbox input to pass to the param function
+#' @export
+
+checkBoxInput <- function(var, value = FALSE){
+  name <- deparse(substitute(var))
+  if(exists(name)) value <- var  # If variable defined value argument is over-ridden. 
+  
+  status <- ifelse(value, "checked", "")
+  
+  inputTag <- paste0("<input type = 'checkbox' id='", paste0("rcloud-params-", name), "'",   status," >")
+  
+  param(inputTag, name, varClass = "logical", inputVal = value)
+}

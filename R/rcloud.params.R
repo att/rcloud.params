@@ -50,7 +50,7 @@ submit <- function(f = NULL) {
     mapply(function(name) {
       if(results[[name]]$type == "Date") 
         results[[name]]$value <- as.Date(results[[name]]$value)
-       
+
       class(results[[name]]$value) <- results[[name]]$type
       assign(name, results[[name]]$value, globalenv())
      
