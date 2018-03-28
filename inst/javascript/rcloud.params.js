@@ -7,6 +7,7 @@
         "shim": {
         }
     });
+    
 
     // stolen from dc.graph.js, could be made its own tiny library
     // Used to retrive and update url
@@ -105,7 +106,40 @@
             sel.css('border', border);
             if(k)
                 k(null, 1);
-        },                
+        },     
+ // copied over from rcloud.web - need to be moved back to caps.R       
+        appendDiv: function(div, content, k) {
+          if (_.isFunction(content)) content = content();
+          $(div).append(content);
+          k(true);
+        },
+      appendElement: function(div, content, k) {
+        if (_.isFunction(content)) content = content();
+        $(div).append($('#' + content));
+        k(true);
+      },
+      prependDiv: function(div, content, k) {
+        if (_.isFunction(content)) content = content();
+        $(div).prepend(content);
+        k(true);
+      },
+      prependElement: function(div, content, k) {
+        if (_.isFunction(content)) content = content();
+        $(div).prepend($('#' + content));
+        k(true);
+      },
+      setDiv: function(div, content, k) {
+        if (_.isFunction(content)) content = content();
+        $(div).empty(content);
+        $(div).append(content);
+        k(true);
+      },
+      setElement: function(div, content, k) {
+        if (_.isFunction(content)) content = content();
+        $(div).empty($('#' + content));
+        $(div).append($('#' + content));
+        k(true);
+      },
   
         add_edit_control: function(context_id, desc, name, def, val, inputTag, labelTag, varClass, callback, k) {
    
