@@ -1,97 +1,51 @@
-#' Create text input
-#'
-#' Creates HTML for a textbox input to pass to the param function
-#' @export
-
-textInput <- function(var, value = NA){
-  name <- deparse(substitute(var))
-  if(exists(name)) value <- var
-
-  inputTag <- paste0("<input type= 'text' id='", paste0("rcloud-params-", name), "'></input>") 
-  
-  param(inputTag, name, varClass = "character", inputVal = value)
+# get oject type to assign class back to R
+getType <- function(`_tag_name`, varArgs) {
+  if (`_tag_name` == "select") {
+    "character"
+  } else if (`_tag_name` == "input") {
+    switch(varArgs$type,
+           "text" = "character",
+           "number" = "numeric",
+           "date" = "Date",
+           "range" = "numeric",
+           "checkbox" = "logical",
+           "character"
+    )
+  }
 }
 
-#' Create numeric input
-#'
-#' Creates HTML for a numeric value input to pass to the param function
 #' @export
+mytags <- list(
+  input = function(var, ...) ptag("input", substitute(var), list(...)), 
+  select = function(var, ...) ptag("select",  substitute(var), list(...))
+)
 
-numericInput <- function(var, value = NA, min = NA, max = NA, step = NA){
-  name <- deparse(substitute(var))
-  if(exists(name)) value <- var  # If variable defined value argument is over-ridden. 
-  
-  inputTag <- paste0("<input type= 'number' id='", paste0("rcloud-params-", name),  
-                     "' min = '", min, "' max = '", max, "' step = '", step,"'></input>") 
-  param(inputTag, name, varClass = "numeric", inputVal = value)
-}
-
-
-#' Create select input
+#' ptag
 #'
-#' Creates HTML for a select dropdown input to pass to the param function
 #' @export
-
-selectInput <- function(var, choices, selected = '', multiple = FALSE){
-  name <- deparse(substitute(var))
+ptag <- function(`_tag_name`, var, varArgs){
   
-  optionTag <- mapply(choices, choices, FUN = function(choice, label){
-    sprintf('<option value="%s"%s>%s</option>',
-            htmlEscape(choice, TRUE), 
-            if (choice %in% selected) ' selected' else '', 
-            htmlEscape(label))
-  })
+  tag_out <- tag(`_tag_name`, varArgs)
   
-  multipleTag <- ifelse(multiple, "multiple = 'multiple'", "")
+  name <- deparse(var)
   
-  optionTag <- HTML(paste(optionTag, collapse = '\n'))
-  inputTag <- paste0("<select id='", paste0("rcloud-params-", name, "' "), multipleTag, 
-                     " >", optionTag, "</select>")
-  param(inputTag, name, varClass = "character")
+  if(is.null(tag_out$attribs$value)){
+    tag_out$attribs$value <- ""
+    value = NA
+  } else{
+    value <- tag_out$attribs$value
+  }
+  
+  if(exists(name)){
+    value <- eval(var)
+    tag_out$attribs$value <- value
+  }
+  
+  tag_out$attribs$id <- paste0("rcloud-params-", name)
+  varClass <- getType(`_tag_name`, varArgs)
+  
+  param(inputTag = as.character(tag_out), name = name, 
+        varClass = varClass, inputVal = value)  
   
 }
 
-#' Create date input
-#'
-#' Creates HTML for a clickable calender input that is passed to the param function.
-#' If var is already defined, calander will be prepoulated with existing date (value ignored) 
-#' 
-#' @param var varible name defined or undefined
-#' @param value Either a date object or a string in yyyy-mm-dd format
-#' @export
-
-dateInput <- function(var, value = NA){
-  name <- deparse(substitute(var))
-
-  if(exists(name)) value <- var
-  if (inherits(value, "Date"))  value <- format(value, "%Y-%m-%d")
-  
-  inputTag <- paste0("<input type='date' id='", paste0("rcloud-params-", name),
-                     "' data-date-format='yyyy-mm-dd' >")
- 
-  param(inputTag, name, varClass = "Date", inputVal = as.character(value))
-}
-
-
-#' Create slider input
-#'
-#' Creates HTML for a numeric value input to pass to the param function
-#' @export
-
-sliderInput <- function(var, value = NA, min = NA, max = NA){
-  name <- deparse(substitute(var))
-
-  
-  if(exists(name)) value <- var  # If variable defined value argument is over-ridden. 
-  if(!exists(name) & is.na(value)) stop(paste(name, " not defined, value arg required"))
-  
-  if(is.na(min) | is.na(max) ) stop("Please supply min & max ") 
-  if(any(lapply(c(min, max, value), class) != "numeric")) stop("All values must be numeric")
-
-  inputTag <- paste0("<span>", min, "</span>", 
-                     "<input type= 'range'  id='", paste0("rcloud-params-", name),  
-                          "' min ='", min, "' max = '", max, "'></input>", 
-                     "<span>", max, "</span>")
-  
-  param(inputTag, name, varClass = "numeric", inputVal = value)
-}

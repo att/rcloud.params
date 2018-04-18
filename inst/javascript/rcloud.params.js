@@ -43,7 +43,9 @@
         if (label[0].childNodes[1].nodeName.toLowerCase() == 'select') {
             // if a select get all selected objects
             return $('#' + label[0].childNodes[1].id + ' option:selected').map(function () { return $(this).val(); }).get();
-        } else {
+        } else if(label[0].childNodes[1].type == 'checkbox'){
+            return label[0].querySelector("[id^='rcloud-params-']").checked;	
+          }else {
             return label[0].querySelector("[id^='rcloud-params-']").value.trim();
 
         }

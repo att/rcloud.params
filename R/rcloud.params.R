@@ -26,7 +26,7 @@ param <- function(inputTag, name, varClass, inputVal = NA) {
   if(!is.null(val)) {
     assign(name, val, envir=globalenv()); # If not in querySting assign to globalEnv
   }
-  if(is.null(val) & !is.na(inputVal))
+  if(is.null(val) & !is.na(inputVal[1]))
     val <- inputVal    # If variable is undefined but user has set a value in widget, use this
   
   callback <- function(val2) {
@@ -34,16 +34,16 @@ param <- function(inputTag, name, varClass, inputVal = NA) {
   } # make call back ocap so variable created in js side can be assigned back to R
 
 
-  input.caps$add_edit_control(Rserve.context(), paste0(name, ':&nbsp'), name,
+  x <- input.caps$add_edit_control(Rserve.context(), paste0(name, ':&nbsp'), name,
                             def, val, inputTag, labelTag, varClass, rcloud.support:::make.oc(callback))
-  #invisible(TRUE)
+  invisible(x)
 }
 
 
 #' Returns output of widget to R side when clicked
 #'
 #' @param f optional. Run a user defined function
-#'
+#' @export
 submit <- function(f = NULL) {
   results <- input.caps$wait_submit(Rserve.context())
 
