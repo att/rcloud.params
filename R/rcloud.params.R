@@ -13,17 +13,17 @@ lookup <- function(name) {
 #' @param name varibale name
 #' @param varClass class of variable 
 
-param <- function(inputTag, name, varClass, inputVal = NA) {
+param <- function(inputTag, name, varClass, inputVal = NA, label = "") {
 
   def <- lookup(name)
   if(any(is.na(def))) 
     def <- NULL
 
-  labelTag <- paste0('<label id = ', paste0("rcloud-params-lab-", name),'>', paste0(name, ':&nbsp') , '</label>')
+  labelTag <- paste0('<label id = ', paste0("rcloud-params-lab-", name),'>', paste0(label, ':&nbsp') , '</label>')
   
   val <- input.QS[[name]] # Pull from query string if there ?
   
-  if(!is.null(val)) {
+  if(!is.null(val[1])) {
     assign(name, val, envir=globalenv()); # If not in querySting assign to globalEnv
   }
   if(is.null(val) & !is.na(inputVal[1]))

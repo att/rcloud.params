@@ -2,7 +2,7 @@
 #' @description  Allows users to enter param widgets with html tools all in one call
 #' @param byRow alter widget display (T/F)
 #' @examples 
-#'    paramDiv(h1("Start"),h1("Start"),
+#'    div(h1("Start"),h1("Start"),
 #'        mytags$input(v, val = 2, type = "number"),
 #'        mytags$input(z, type = "date"),
 #'        h1("End"))
