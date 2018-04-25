@@ -2,58 +2,60 @@
 Notebook parameters for RCloud
 
 This RCloud package allows notebook variables to be exposed as parameters,
-both through query parameters and through UI elements.
+both through query parameters and through UI elements. Useful for re-rendering a notebook and easily changing key inputs.
 
-Say that we want a variable `x` to be read from a query parameter or defaulted to 1.
+Two functions allow you to set parameters as widgets. 
 
-Simply load the library, set the variable, and call `param` on it, and then call `submit`
-to generate the submit button:
+1. Use `param_set` to assign multiple variables. Each variable is given a list with information about how the parameter should be disaplyed in a notebook. Once paramters are set call `submit` to generate a submit button. Once selected query string will be update and variables assigned in the notebook with the correct class (eg. date input to "Date")
 
 ```{r}
 library(rcloud.params)
-x <- 1
-numericInput(x)
+x <- 10
+param_set(
+    x = list(label = "Minimum",  min = 1, input = "numeric"),
+    title_mango = list(label = "The title", value = "Mango", input = "text"), 
+    cars_cols = list(label = "Choose", input = "select",  multiple = "multiple", 
+                     choices =names(mtcars)),
+    my_date = list(label = "Date", input = "date"),
+    the_range = list(label = "Range", input= "slider", value = 10, min = 1, max = 100),
+    check_option = list(label = "Yes?", input = "checkbox")
+)
 submit()
+ 
 ```
 
-rcloud.params will generate a labelled text input for the variable, display the default value,
-and display a submit button and wait for it to be clicked.
+Widget will generate a labelled input for the variable.
+Widget is populated in 3 possible ways:
 
-If a value is specified as a query parameter, it will populate the variable instead of the
-default value.
+1. Display the default value provided in function call
+2. Display value if variable already exists in notebook env 
+3. Display value if specified as a query parameter
 
-If there is no default, the text input will be empty and must be filled in before the submit
+
+If there is no default, the input will be empty and must be filled in before the submit
 will be successful:
-
-```{r}
-library(rcloud.params)
-textInput(y)
-submit()
-```
 
 The variable will created during `submit`. A non-defaulted value can also be specified as
 `NA` or assigned using the widget.
 
+2. 
+Inputs can be specified individually using `param_add`. The first argument must be the unqoted varaible name, all other arguments must be supplied as a list and match those taken by html::tag
+
 ```{r}
-library(rcloud.params)
-textInput(y, value = "Hello World")
+param_add(var = z, list(type = "numeric", label = "Assign value for z")) 
+
 submit()
 ```
 
-Multiple variables can be assigned using one submit() either by individually listing
-or using the paramDiv() function to diaply with inline html
+Paramaterized widgets can be written inline with html tools objects, or wrapped inside a re-write of the div function. (This may change as rcloud.params div uses rloud.web caps `rcw.append` and `rcw.prepend`)
 
 ```{r}
-library(rcloud.params)
-library(htmltools)
-
-paramDiv(h1("Start"), 
-    textInput(x), 
-    numericInput(y), 
-    dateInput(theDate), 
-    h1("End"), 
-    byRow = TRUE
-    )
+div(
+  h1("Params report"),
+  param_add(var = z, list(type = "numeric", label = "Assign value for z")) 
+  h2("End")
+  )
 submit()
 ```
+
 

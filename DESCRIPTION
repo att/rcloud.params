@@ -4,7 +4,7 @@ Version: 0.0.3
 Author: Gordon Woodhull <gordon@research.att.com>, Anatoliy Gorskiy <anatoliy@research.att.com>
 Maintainer: Gordon Woodhull <gordon@research.att.com>, Anatoliy Gorskiy <anatoliy@research.att.com>
 Description: rcloud.params provides a way to parameterize notebooks via query parameters and UI elements
-Depends: rcloud.support
+Depends: rcloud.support, htmltools
 NOTE: --- packages that are not on CRAN/RForge.net *must* be in Suggests! ---
 License: MIT
 RoxygenNote: 6.0.1

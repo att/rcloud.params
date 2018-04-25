@@ -4,7 +4,7 @@
 \alias{param}
 \title{Pass parameters to javascript}
 \usage{
-param(inputTag, name, varClass)
+param(inputTag, name, varClass, inputVal = NA, label = "")
 }
 \arguments{
 \item{inputTag}{HTML string to create widget}

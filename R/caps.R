@@ -3,6 +3,8 @@
   if (inherits(x, "javascript_function") || (is.character(x) && length(x) == 1)){ x }
   else {paste(as.character(x), collapse='\n')}
 } 
+
+#' @export
 rcw.append <- function(element, what) {
   if (grepl("^rcloud-params-", what)) {
     input.caps$appendElement(element, what)
@@ -19,8 +21,10 @@ rcw.prepend <- function(element, what) {
   }
 } 
 
-rcw.set <- function(element, what) {
-  if (grepl("^rcloud-params-", what)) {
+#' @export
+rcw.set <- function(element, what){
+  if(grepl("^rcloud-params-",what)){
+
     input.caps$setElement(element, what)
   } else{
     input.caps$setDiv(element, .html.in(what))
