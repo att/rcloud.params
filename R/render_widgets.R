@@ -82,7 +82,7 @@ param_set <- function(...){
 #' @export
 param_add <- function(var, varArgs){
   
-tagName <- ifelse(varArgs$type == "select", "select", "input")
+  tagName <- ifelse(varArgs$type == "select", "select", "input")
   
   tag_out <- tag(tagName, varArgs)
   
@@ -101,8 +101,10 @@ tagName <- ifelse(varArgs$type == "select", "select", "input")
   }
   
   tag_out$attribs$id <- paste0("rcloud-params-", name)
-  if(param$input == "select"){
-    tag_out$children <- list(lapply(param$choices, tags$option))
+  
+  if(tag_out$attribs$type == "select"){
+    tag_out$children <- list(lapply(tag_out$attribs$choices, tags$option))
+    tag_out$attribs <- NULL
   }
   label <- ifelse(is.null(tag_out$attribs$label), name, tag_out$attribs$label)
   varClass <- getType(tagName, varArgs)
