@@ -55,12 +55,16 @@ param_set <- function(...){
       value <- tag_out$attribs$value
     }
     
-    if(is.function(get(name))){
-      stop(paste0("The variable name you have selected (", name,") is invalid, please choose another"))
-    }
+
 
     if(exists(name)){
+      
       value <- get(name)
+      
+      if(is.function(value)){
+        stop(paste0("The variable name you have selected (", name,") is invalid, please choose another"))
+      }
+ 
       tag_out$attribs$value <- value
     }
     
