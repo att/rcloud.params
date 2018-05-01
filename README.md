@@ -4,8 +4,6 @@ Notebook parameters for RCloud
 This RCloud package allows notebook variables to be exposed as parameters,
 both through query parameters and through UI elements. Useful for re-rendering a notebook and easily changing key inputs.
 
-Two functions allow you to set parameters as widgets. 
-
 1. Use `param_set` to assign multiple variables. Each variable is given a list with information about how the parameter should be disaplyed in a notebook. Once paramters are set call `submit` to generate a submit button. Once selected query string will be update and variables assigned in the notebook with the correct class (eg. date input to "Date")
 
 ```{r}
@@ -38,21 +36,12 @@ will be successful:
 The variable will created during `submit`. A non-defaulted value can also be specified as
 `NA` or assigned using the widget.
 
-2. 
-Inputs can be specified individually using `param_add`. The first argument must be the unqoted varaible name, all other arguments must be supplied as a list and match those taken by html::tag
-
-```{r}
-param_add(var = z, list(type = "numeric", label = "Assign value for z")) 
-
-submit()
-```
-
 Paramaterized widgets can be written inline with html tools objects, or wrapped inside a re-write of the div function. (This may change as rcloud.params div uses rloud.web caps `rcw.append` and `rcw.prepend`)
 
 ```{r}
 div(
   h1("Params report"),
-  param_add(var = z, list(type = "numeric", label = "Assign value for z")) 
+  param_set(var = z, list(type = "numeric", label = "Assign value for z")) 
   h2("End")
   )
 submit()

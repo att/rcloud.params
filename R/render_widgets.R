@@ -1,9 +1,9 @@
 # get oject type to assign class back to R
-getType <- function(`_tag_name`, varArgs) {
-  if (`_tag_name` == "select") {
+getType <- function(param) {
+  if (param$input == "select") {
     "character"
-  } else if (`_tag_name` == "input") {
-    switch(varArgs$type,
+  } else if (param$input == "input") {
+    switch(param$type,
            "text" = "character",
            "number" = "numeric",
            "date" = "Date",
@@ -46,7 +46,7 @@ param_set <- function(...){
     name <- i
     param <- fixInputType(param) 
     tag_out <- tag(param$input, param) 
-    
+
     #Set value
     if(is.null(tag_out$attribs$value)){
       tag_out$attribs$value <- ""
@@ -55,20 +55,35 @@ param_set <- function(...){
       value <- tag_out$attribs$value
     }
     
+    if(is.function(get(name))){
+      stop(paste0("The variable name you have selected (", name,") is invalid, please choose another"))
+    }
+
     if(exists(name)){
       value <- get(name)
       tag_out$attribs$value <- value
     }
     
     tag_out$attribs$id <- paste0("rcloud-params-", name)
-    
+
     if(param$input == "select"){
       
       tag_out$children <- list(lapply(param$choices, tags$option))
       tag_out$attribs$choices <- NULL
+      tag_out$attribs$value <- NULL
+    }
+
+    if(param$type == "checkbox" && !is.na(value)){
+      if(value == TRUE){
+        tag_out$attribs$checked <- "checked"
+      }
     }
     
-    varClass <- getType(param$input, param)
+    if(inherits(value, "Date")){
+      value <- as.character(value)
+    }
+
+    varClass <- getType(param)
     label <- ifelse(is.null(param$label), name, param$label)
 
     param(inputTag = as.character(tag_out), name = name,
