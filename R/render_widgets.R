@@ -41,12 +41,15 @@ fixInputType <- function(param){
 param_set <- function(...){
   params_in  <- list(...)
   
-  for(i in names(params_in)){
+  ui.log.debug("Param set elements:", paste0(names(params_in), collapse = ","))
+  
+  result <- list();
+  
+  for(i in names(params_in)) {
     param <- params_in[[i]]
     name <- i
     param <- fixInputType(param) 
     tag_out <- tag(param$input, param) 
-
     #Set value
     if(is.null(tag_out$attribs$value)){
       tag_out$attribs$value <- ""
@@ -54,8 +57,6 @@ param_set <- function(...){
     } else{
       value <- tag_out$attribs$value
     }
-    
-
 
     if(exists(name)){
       
@@ -90,8 +91,14 @@ param_set <- function(...){
     varClass <- getType(param)
     label <- ifelse(is.null(param$label), name, param$label)
 
-    param(inputTag = as.character(tag_out), name = name,
-          varClass = varClass, inputVal = value, label = label)
+    control <- param(inputTag = as.character(tag_out), name = name,
+                     varClass = varClass, inputVal = value, label = label);
+    if(!inherits(control, 'rcloud-params-control')) {
+      stop("unexpected type of control " + class(control))
+    }
+    result[i] <- list(control)
   }
+  
+  return(result)
 }
 

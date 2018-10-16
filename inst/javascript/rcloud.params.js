@@ -29,25 +29,48 @@
         };
     })();
 
-    var _varmap, _varClass = [], _defaults = {}, _needed = [];
+    var _varmap, _varClass = [], _defaults = {}, _needed = [], _element_fragments = {};
 
     function input_id(name) {
         return 'rcloud-params-' + name;
     }
     function have_value(name) {
-        return _varmap[name] != undefined ||
+        return _varmap[name] !== undefined ||
             _defaults[name] !== undefined;
     }
     function get_input_value(label) { // takes jquery object and extracts value
 
-        if (label[0].childNodes[1].nodeName.toLowerCase() == 'select') {
-          // if a select get all selected objects
-          return $('#' + label[0].id + ' option:selected').map(function () { return $(this).val(); }).get();
-          }else if(label[0].childNodes[1].type == 'checkbox'){
+         if (label[0].childNodes[1].nodeName.toLowerCase() == 'select') {
+            // if a select get all selected objects
+            return $('#' + label[0].id + ' option:selected').map(function () { return $(this).val(); }).get();
+          } else if(label[0].childNodes[1].type == 'checkbox') {
             return label[0].querySelector("[id^='rcloud-params-']").checked;	
           } else {
             return label[0].querySelector("[id^='rcloud-params-']").value.trim();
-            }
+          }
+    }
+    
+    function get_element_fragment(control_descriptor) {
+      if(!control_descriptor.id) {
+        throw new Error('Expected control descriptor, but got ' + control_descriptor);
+      }
+      if(_element_fragments[control_descriptor.id]) {
+          return _element_fragments[control_descriptor.id];
+      } else {
+          console.warn('Control with id "' + content + '" does not exist"');
+      }
+      return null;
+    }
+    
+    function get_control_element(content) {
+       if (content.hasOwnProperty('id')) {
+          return  get_element_fragment(content);
+        } else if (_.isFunction(content)) {
+          let id = content();
+          return $('#' + id);
+        } else {
+          return $('#' + content);
+        }
     }
     // Used to combine value with class to push back to R  
     combine = (obj1, obj2) => {
@@ -104,8 +127,10 @@
             k(true);
         },
         appendElement: function (div, content, k) {
-            if (_.isFunction(content)) content = content();
-            $(div).append($('#' + content));
+            let el = get_control_element(content);
+            if(el) {
+              $(div).append(el);
+            }
             k(true);
         },
         prependDiv: function (div, content, k) {
@@ -114,8 +139,10 @@
             k(true);
         },
         prependElement: function (div, content, k) {
-            if (_.isFunction(content)) content = content();
-            $(div).prepend($('#' + content));
+            let el = get_control_element(content);
+            if(el) {
+              $(div).prepend(el);
+            }
             k(true);
         },
         setDiv: function (div, content, k) {
@@ -124,10 +151,13 @@
             $(div).append(content);
             k(true);
         },
+        
         setElement: function (div, content, k) {
-            if (_.isFunction(content)) content = content();
-            $(div).empty($('#' + content));
-            $(div).append($('#' + content));
+            $(div).empty();
+            let el = get_control_element(content);
+            if(el) {
+              $(div).append(_element_fragments[content]);
+            }
             k(true);
         },
 
@@ -155,11 +185,11 @@
                 if (val === '') val = undefined;
                 result.set_query(name, val, varClass);
             });
-            RCloud.session.invoke_context_callback('selection_out', context_id, label);
+            //RCloud.session.invoke_context_callback('selection_out', context_id, label);
            
             _needed.push(name);
-
-            k(null, label.attr('id'));      
+            _element_fragments[label.attr('id')] = label;
+            k(label.attr('id'));      
         },
         wait_submit: function (context_id, k) {
             var submit = $('<input id = "rcloud-params-submit" type="button" value="Submit" />');
@@ -179,7 +209,15 @@
                 }
             });
             RCloud.session.invoke_context_callback('selection_out', context_id, submit);
-        }
+        },
+        log: function(content, k) {
+            console.log(content);
+            k();
+        },
+        debug: function(content, k) {
+            console.debug(content);
+            k();
+        },
     };
     return result;
 })()) /*jshint -W033 */ // this is an expression not a statement

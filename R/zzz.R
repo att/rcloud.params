@@ -19,3 +19,25 @@ input.QS <- NULL
   }
   
 }
+
+
+.isDebugEnabled <- function() {
+  OPT <- "rcloud.params.debug.enabled"
+  if(rcloud.support:::nzConf(OPT)) {
+    return(as.logical(rcloud.support:::getConf(OPT)))
+  }
+  return(FALSE)
+}
+
+ui.log.info <- function(...) {
+  rcloud.params.ui.log.info(paste(..., collapse = ""));
+}
+
+ui.log.debug <- function(...) {
+  if(.isDebugEnabled()) {
+    rcloud.params.ui.log.debug(paste(..., collapse = ""));
+  }
+}
+
+rcloud.params.ui.log.info <- function(content) input.caps$log(content)
+rcloud.params.ui.log.debug <- function(content) input.caps$debug(content)

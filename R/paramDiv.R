@@ -14,27 +14,53 @@
 ## when the package is transfered.
 
 
+.generateWidgetHTML <- function(code) {
+  
+  output <- tryCatch({ 
+    tres <- eval(parse(text = code))
+    if(inherits(tres, 'shiny.tag')) {
+      return(list(tres))
+    }
+    tres
+  }, error = function(e) {
+    return(structure(list("msg", paste0("Failed to generate widget: ", as.character(e) )), class="code-eval-error"))
+  })
+  
+  ui.log.debug("Code:", code, ". Output: ", paste0(output, collapse = ","), " of type ", class(output))
+  if(inherits(output, "code-eval-error")) {
+    output <- list(paste0('<span class="error">Widget error: ', output$msg, '</span>'))
+  }
+  return(output)
+}
+
 div <- function(..., byRow = FALSE){
 
-    listNames <- as.character(match.call())[-1]  # remove call 
+  listNames <- as.character(match.call())[-1]  # remove call 
   
   if(!missing(byRow))
     listNames <- listNames[-length(listNames)] # remove byRow arg
 
   myDiv <- vector(length = length(listNames))
 
-  if(byRow){
+  if (byRow) {
     rcloud.html.out(htmltools::div(id = "param"))
-    for(i in seq_len(length(listNames)))
-      rcw.append("#param", eval(parse(text = listNames[i])))
-    
-  } else{
-    for(i in seq_len(length(listNames)))
+    for(i in seq_len(length(listNames))) {
+      output <- .generateWidgetHTML(listNames[i])
+      rcw.append("#param", output)
+    }
+  } else {
+    for(i in seq_len(length(listNames))) {
       myDiv[i] <- as.character(htmltools::div(id = paste0("param", i)))
-    
+    }
+
     rcloud.html.out(htmltools::div(HTML(myDiv)))
     
-    for(i in seq_len(length(listNames)))
-      rcw.set(paste0("#param", i), eval(parse(text = listNames[i])))
+    for(i in seq_len(length(listNames))) {
+      output <- .generateWidgetHTML(listNames[i])
+      lapply(output, function(tag) {
+        ui.log.debug("Appending:", tag, " to: ", paste0("#param", i), " of type ", class(tag))
+        rcw.append(paste0("#param", i), tag)
+      });
+    }
   }
 }

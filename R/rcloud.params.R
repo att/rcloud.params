@@ -19,7 +19,7 @@ param <- function(inputTag, name, varClass, inputVal = NA, label = "") {
   if(any(is.na(def))) 
     def <- NULL
 
-  labelTag <- paste0('<label id = ', paste0("rcloud-params-lab-", name),'>', paste0(label, ':&nbsp') , '</label>')
+  labelTag <- paste0('<label id="', paste0("rcloud-params-lab-", name),'">', paste0(label, ':&nbsp') , '</label>')
   
   val <- input.QS[[name]] # Pull from query string if there ?
   
@@ -34,9 +34,12 @@ param <- function(inputTag, name, varClass, inputVal = NA, label = "") {
   } # make call back ocap so variable created in js side can be assigned back to R
 
 
-  x <- input.caps$add_edit_control(Rserve.context(), paste0(name, ':&nbsp'), name,
+  widgetId <- input.caps$add_edit_control(Rserve.context(), paste0(name, ':&nbsp'), name,
                             def, val, inputTag, labelTag, varClass, rcloud.support:::make.oc(callback))
-  invisible(x)
+  
+  ui.log.debug("HTML widget id: ", widgetId)
+
+  invisible(structure(list( id = widgetId, name = name), class="rcloud-params-control"))
 }
 
 
