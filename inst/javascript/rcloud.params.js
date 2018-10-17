@@ -127,52 +127,78 @@
         },
         // copied over from rcloud.web - need to be moved back to caps.R       
         appendDiv: function (context_id, div, content, k) {
-            executeInCellResultProcessingLoop(context_id, function() {
-            if (_.isFunction(content)) content = content();
-            $(div).append(content);
+            executeInCellResultProcessingLoop(context_id, function(result_div) {
+              if (_.isFunction(content)) content = content();
+              if (div) {
+                $(div).append(content);
+              } else {
+                result_div.append(content);
+              }
             });
             k(true);
         },
         appendElement: function (context_id, div, content, k) {
-            executeInCellResultProcessingLoop(context_id, function() {
+            executeInCellResultProcessingLoop(context_id, function(result_div) {
             let el = get_control_element(content);
             if(el) {
-              $(div).append(el);
+              if (div) {
+                $(div).append(el);
+              } else {
+                result_div.append(el);
+              }
             }
             });
             k(true);
         },
         prependDiv: function (context_id, div, content, k) {
-            executeInCellResultProcessingLoop(context_id, function() {
-            if (_.isFunction(content)) content = content();
-            $(div).prepend(content);
+            executeInCellResultProcessingLoop(context_id, function(result_div) {
+              if (_.isFunction(content)) content = content();
+              if (div) {
+                $(div).prepend(content);
+              } else {
+                result_div.prepend(content);
+              }
             });
             k(true);
         },
         prependElement: function (context_id, div, content, k) {
-            executeInCellResultProcessingLoop(context_id, function() {
+            executeInCellResultProcessingLoop(context_id, function(result_div) {
               let el = get_control_element(content);
               if(el) {
-                $(div).prepend(el);
+                if (div) {
+                  $(div).prepend(el);
+                } else {
+                  result_div.prepend(el);
+                }
               }
             });
             k(true);
         },
         setDiv: function (context_id, div, content, k) {
-            executeInCellResultProcessingLoop(context_id, function() {
+            executeInCellResultProcessingLoop(context_id, function(result_div) {
               if (_.isFunction(content)) content = content();
-              $(div).empty();
-              $(div).append(content);
+              if (div) {
+                $(div).empty();
+                $(div).append(content);
+              } else {
+                result_div.empty();
+                result_div.append(content);
+              }
             });
             k(true);
         },
         
         setElement: function (context_id, div, content, k) {
-            executeInCellResultProcessingLoop(context_id, function() {
-              $(div).empty();
+            executeInCellResultProcessingLoop(context_id, function(result_div) {
               let el = get_control_element(content);
               if(el) {
-                $(div).append(_element_fragments[content]);
+                if (div) {
+                  $(div).empty();
+                  $(div).append(el);
+                } else {
+                  result_div.empty();
+                  result_div.append(el);
+                }
               }
             });
             k(true);

@@ -39,7 +39,19 @@ param <- function(inputTag, name, varClass, inputVal = NA, label = "") {
   
   ui.log.debug("HTML widget id: ", widgetId)
 
-  invisible(structure(list( id = widgetId, name = name), class="rcloud-params-control"))
+  return(structure(list( id = widgetId, name = name), class="rcloud.params.control"))
+}
+
+#' @export
+print.rcloud.params.control <- function(x, ..., view = interactive()) {
+  rcw.append("", x)
+}
+
+#' @export
+print.rcloud.params.param.set <- function(x, ..., view = interactive()) {
+  invisible(lapply(x$params, function(param) {
+    print(param)
+  }))
 }
 
 

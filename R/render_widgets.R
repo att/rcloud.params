@@ -93,12 +93,12 @@ param_set <- function(...){
 
     control <- param(inputTag = as.character(tag_out), name = name,
                      varClass = varClass, inputVal = value, label = label);
-    if(!inherits(control, 'rcloud-params-control')) {
+    if(!inherits(control, 'rcloud.params.control')) {
       stop("unexpected type of control " + class(control))
     }
     result[i] <- list(control)
   }
   
-  return(result)
+  return(structure(list(params = result), class="rcloud.params.param.set"));
 }
 

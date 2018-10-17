@@ -57,7 +57,12 @@ div <- function(..., byRow = FALSE) {
     
     for(i in seq_len(length(listNames))) {
       output <- .runWidgetCode(listNames[i])
-      lapply(output, function(tag) {
+      controls <- output
+      if(inherits(output, 'rcloud.params.param.set')) {
+        controls <- output$params
+      }
+      
+      lapply(controls, function(tag) {
         ui.log.debug("Appending:", tag, " to: ", paste0("#param", i), " of type ", class(tag))
         rcw.append(paste0("#param", i), tag)
       });
