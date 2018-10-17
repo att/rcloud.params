@@ -7,9 +7,9 @@
 #' @export
 rcw.append <- function(element, what) {
   if (inherits( what, 'rcloud-params-control')) {
-    input.caps$appendElement(element, what)
+    input.caps$appendElement(Rserve.context(), element, what)
   } else{
-    input.caps$appendDiv(element, .html.in(what))
+    input.caps$appendDiv(Rserve.context(), element, .html.in(what))
   }
   
 }
@@ -24,9 +24,9 @@ rcw.prepend <- function(element, what) {
 #' @export
 rcw.set <- function(element, what){
   if (inherits( what, 'rcloud-params-control')) {
-    input.caps$setElement(element, what)
+    input.caps$setElement(Rserve.context(), element, what)
   } else{
-    input.caps$setDiv(element, .html.in(what))
+    input.caps$setDiv(Rserve.context(), element, .html.in(what))
   }
 } 
 

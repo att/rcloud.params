@@ -39,12 +39,15 @@ The variable will created during `submit`. A non-defaulted value can also be spe
 Paramaterized widgets can be written inline with html tools objects, or wrapped inside a re-write of the div function. (This may change as rcloud.params div uses rloud.web caps `rcw.append` and `rcw.prepend`)
 
 ```{r}
+library(rcloud.params)
+x <- 10
 div(
-  h1("Params report"),
-  param_set(var = z, list(type = "numeric", label = "Assign value for z")) 
+  h1("Report parameters"),
+  param_set(x = list(input = "numeric", label = "Assign value for x"),
+  y = list(input = "numeric", label = "Assign value for y")),
   h2("End")
   )
-submit()
+submit(function() { plot(c(x:y))}) 
 ```
 
 

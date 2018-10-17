@@ -14,7 +14,7 @@
 ## when the package is transfered.
 
 
-.generateWidgetHTML <- function(code) {
+.runWidgetCode <- function(code) {
   
   output <- tryCatch({ 
     tres <- eval(parse(text = code))
@@ -33,7 +33,7 @@
   return(output)
 }
 
-div <- function(..., byRow = FALSE){
+div <- function(..., byRow = FALSE) {
 
   listNames <- as.character(match.call())[-1]  # remove call 
   
@@ -45,7 +45,7 @@ div <- function(..., byRow = FALSE){
   if (byRow) {
     rcloud.html.out(htmltools::div(id = "param"))
     for(i in seq_len(length(listNames))) {
-      output <- .generateWidgetHTML(listNames[i])
+      output <- .runWidgetCode(listNames[i])
       rcw.append("#param", output)
     }
   } else {
@@ -56,7 +56,7 @@ div <- function(..., byRow = FALSE){
     rcloud.html.out(htmltools::div(HTML(myDiv)))
     
     for(i in seq_len(length(listNames))) {
-      output <- .generateWidgetHTML(listNames[i])
+      output <- .runWidgetCode(listNames[i])
       lapply(output, function(tag) {
         ui.log.debug("Appending:", tag, " to: ", paste0("#param", i), " of type ", class(tag))
         rcw.append(paste0("#param", i), tag)
@@ -64,3 +64,4 @@ div <- function(..., byRow = FALSE){
     }
   }
 }
+

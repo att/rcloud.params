@@ -72,6 +72,11 @@
           return $('#' + content);
         }
     }
+    // Schedules execution of a function within cell result processing loop to ensure that any UI element referenes used in the function
+    // were added to the result pane.
+    function executeInCellResultProcessingLoop(context_id, fun) {
+      RCloud.session.invoke_context_callback('js_out', context_id, fun);
+    }
     // Used to combine value with class to push back to R  
     combine = (obj1, obj2) => {
         let returnObject = {},
@@ -111,7 +116,7 @@
             if (k)
                 k(null, 1);
         },
-        error_highlight(names, whether, k) {
+        error_highlight: function(names, whether, k) {
             if (!_.isArray(names))
                 names = [names];
             var sel = $(names.map(function (n) { return '#' + input_id(n); }).join(',')),
@@ -121,48 +126,59 @@
                 k(null, 1);
         },
         // copied over from rcloud.web - need to be moved back to caps.R       
-        appendDiv: function (div, content, k) {
+        appendDiv: function (context_id, div, content, k) {
+            executeInCellResultProcessingLoop(context_id, function() {
             if (_.isFunction(content)) content = content();
             $(div).append(content);
+            });
             k(true);
         },
-        appendElement: function (div, content, k) {
+        appendElement: function (context_id, div, content, k) {
+            executeInCellResultProcessingLoop(context_id, function() {
             let el = get_control_element(content);
             if(el) {
               $(div).append(el);
             }
+            });
             k(true);
         },
-        prependDiv: function (div, content, k) {
+        prependDiv: function (context_id, div, content, k) {
+            executeInCellResultProcessingLoop(context_id, function() {
             if (_.isFunction(content)) content = content();
             $(div).prepend(content);
+            });
             k(true);
         },
-        prependElement: function (div, content, k) {
-            let el = get_control_element(content);
-            if(el) {
-              $(div).prepend(el);
-            }
+        prependElement: function (context_id, div, content, k) {
+            executeInCellResultProcessingLoop(context_id, function() {
+              let el = get_control_element(content);
+              if(el) {
+                $(div).prepend(el);
+              }
+            });
             k(true);
         },
-        setDiv: function (div, content, k) {
-            if (_.isFunction(content)) content = content();
-            $(div).empty(content);
-            $(div).append(content);
+        setDiv: function (context_id, div, content, k) {
+            executeInCellResultProcessingLoop(context_id, function() {
+              if (_.isFunction(content)) content = content();
+              $(div).empty();
+              $(div).append(content);
+            });
             k(true);
         },
         
-        setElement: function (div, content, k) {
-            $(div).empty();
-            let el = get_control_element(content);
-            if(el) {
-              $(div).append(_element_fragments[content]);
-            }
+        setElement: function (context_id, div, content, k) {
+            executeInCellResultProcessingLoop(context_id, function() {
+              $(div).empty();
+              let el = get_control_element(content);
+              if(el) {
+                $(div).append(_element_fragments[content]);
+              }
+            });
             k(true);
         },
 
         add_edit_control: function (context_id, desc, name, def, val, inputTag, labelTag, varClass, callback, k) {
-
             var input = $(inputTag);
             var label = $(labelTag).append(input);
             if (val !== null) {
@@ -185,7 +201,6 @@
                 if (val === '') val = undefined;
                 result.set_query(name, val, varClass);
             });
-            //RCloud.session.invoke_context_callback('selection_out', context_id, label);
            
             _needed.push(name);
             _element_fragments[label.attr('id')] = label;
