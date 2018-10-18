@@ -2,6 +2,7 @@
     // stolen from dc.graph.js, could be made its own tiny library
     // Used to retrive and update url
     var querystring = (function () {
+        var _init_window_href = null;
         return {
             parse: function () {
                 return (function (a) {
@@ -23,8 +24,13 @@
                 for (var k in m)
                     parts.push(k + '=' + encodeURIComponent(m[k]));
                 var url = base + '?' + parts.join('&');
-                window.history.pushState(null, null, url);
-                return this;
+                if(!this._init_window_href) {
+                   this._init_window_href = window.location.href;
+                   window.history.pushState(null, null, url);
+                 } else {
+                   window.history.replaceState(null, null, url);
+                 }
+                 return this;
             }
         };
     })();
