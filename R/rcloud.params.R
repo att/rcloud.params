@@ -15,9 +15,9 @@ lookup <- function(name) {
 
 param <- function(inputTag, name, varClass, inputVal = NA, label = "") {
 
-  def <- lookup(name)
-  if(any(is.na(def))) 
-    def <- NULL
+  defaultValue <- lookup(name)
+  if(any(is.na(defaultValue))) 
+    defaultValue <- NULL
 
   labelTag <- paste0('<label id="', paste0("rcloud-params-lab-", name),'">', paste0(label, ':&nbsp') , '</label>')
   
@@ -26,6 +26,7 @@ param <- function(inputTag, name, varClass, inputVal = NA, label = "") {
   if(!is.null(val[1])) {
     assign(name, val, envir=globalenv()); # If not in querySting assign to globalEnv
   }
+
   if(is.null(val) & !is.na(inputVal[1]))
     val <- inputVal    # If variable is undefined but user has set a value in widget, use this
   
@@ -35,7 +36,8 @@ param <- function(inputTag, name, varClass, inputVal = NA, label = "") {
 
 
   widgetId <- input.caps$add_edit_control(Rserve.context(), paste0(name, ':&nbsp'), name,
-                            def, val, inputTag, labelTag, varClass, rcloud.support:::make.oc(callback))
+                                          defaultValue, val, inputTag, labelTag, 
+                                          varClass, rcloud.support:::make.oc(callback))
   
   ui.log.debug("HTML widget id: ", widgetId)
 

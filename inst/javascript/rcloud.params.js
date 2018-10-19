@@ -35,15 +35,16 @@
         };
     })();
 
-    var _varmap, _varClass = [], _defaults = {}, _needed = [], _element_fragments = {};
+    var _varmap = {}, _varClass = {}, _defaults = {}, _needed = [], _element_fragments = {};
 
     function input_id(name) {
         return 'rcloud-params-' + name;
     }
+
     function have_value(name) {
-        return _varmap[name] !== undefined ||
-            _defaults[name] !== undefined;
+        return _varmap[name] !== undefined && _varmap[name] !== null && _varmap[name] !== '';
     }
+
     function get_input_value(label) { // takes jquery object and extracts value
 
          if (label[0].childNodes[1].nodeName.toLowerCase() == 'select') {
@@ -107,13 +108,15 @@
             k(null, _varmap);
         },
         set_query: function (key, value, varClass, k) {
-            if (value !== undefined && _defaults[key] !== value) {
+            if (value !== undefined && value !== null && value !== '') {
                 _varmap[key] = value;
                 _varClass[key] = varClass;
-            }
-            else
+            } else {
                 delete _varmap[key];
-            querystring.update(_varmap);
+            }
+            querystring.update(_.pick(_varmap, _.filter(Object.keys(_varmap), (k) => { 
+              return _defaults[k] !== _varmap[k]; 
+            })));
             if (k)
                 k(null, 1);
         },
@@ -210,22 +213,31 @@
             k(true);
         },
 
-        add_edit_control: function (context_id, desc, name, def, val, inputTag, labelTag, varClass, callback, k) {
+        add_edit_control: function (context_id, desc, name, defaultValue, value, inputTag, labelTag, varClass, callback, k) {
             var input = $(inputTag);
             var label = $(labelTag).append(input);
-            if (val !== null) {
-                _varmap[name] = val;
-                _varClass[name] = varClass;
-                input.val(val);
-                result.set_query(name, val, varClass);
-            } else if (def !== null) {
-                _defaults[name] = def;
-                _varClass[name] = varClass;
-                input.val(def);
-                result.set_query(name, val, varClass);
-            } else if (_varmap[name] !== null) {
-                input.val(_varmap[name]);
+            
+            _varClass[name] = varClass;
+            
+            let isNotEmpty = (v) => {
+              return v !== undefined && v !== null;
+            };
+            
+            if (isNotEmpty(defaultValue)) {
+               _defaults[name] = defaultValue;
             }
+            
+            let inputVal;
+            
+            if (isNotEmpty(value)) {
+              inputVal = value;
+            } else if (isNotEmpty(defaultValue)) {
+              inputVal = defaultValue;
+            }
+
+            input.val(inputVal);
+            result.set_query(name, inputVal, varClass);
+
             label.on('change', function () {
 
                 var val = get_input_value(label);
