@@ -41,7 +41,6 @@ fixInputType <- function(param){
 param_set <- function(...){
   params_in  <- list(...)
   
-  ui.log.debug("Param set elements:", paste0(names(params_in), collapse = ","))
   
   result <- list();
   
@@ -57,6 +56,7 @@ param_set <- function(...){
     } else{
       value <- tag_out$attribs$value
     }
+    ui.log.debug("Parameter:", paste0("Name: ", name, ", Type: ", param$type, ", Value: ", value))
 
     if(exists(name)){
       
@@ -79,7 +79,7 @@ param_set <- function(...){
     }
 
     if(param$type == "checkbox" && !is.na(value)){
-      if(value == TRUE){
+      if(value == TRUE) {
         tag_out$attribs$checked <- "checked"
       }
     }

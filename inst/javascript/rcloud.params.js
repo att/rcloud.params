@@ -35,7 +35,7 @@
         };
     })();
 
-    var _varmap = {}, _varClass = {}, _defaults = {}, _needed = [], _element_fragments = {};
+    var _varmap = {}, _varClass = {}, _defaults = {}, _needed = [], _element_fragments = {}, _backend;
 
     function input_id(name) {
         return 'rcloud-params-' + name;
@@ -46,6 +46,9 @@
     }
 
     function get_input_value(label) { // takes jquery object and extracts value
+         if(!label.is('label')) {
+           return null;
+         }
 
          if (label[0].childNodes[1].nodeName.toLowerCase() == 'select') {
             // if a select get all selected objects
@@ -103,9 +106,34 @@
         return returnObject;
     };
     var result = {
-        init: function (k) {
-            _varmap = querystring.parse();
-            k(null, _varmap);
+        init: function (ocaps, k) {
+          
+          _backend = RCloud.promisify_paths(ocaps, [  // jshint ignore:line
+                    ['handle_event']
+                ], true);
+
+          var observer = new MutationObserver(function(mutations) {
+            _.forEach(mutations, (m) => { 
+              _.forEach(m.addedNodes, (m) => { 
+                  _.forEach($(m).find('[data-rcloud-param="TRUE"]'), (n) => { 
+                  let el = $(n);
+                  console.log(el);
+                  el.on('change', function (e) {
+                      let val = get_input_value(el);
+                      let name = el.data('rcloud-param-name');
+      
+                      if (val === '') val = undefined;
+                      result.set_query(name, val, el.data('rcloud-param-rclass'));
+                      _backend.handle_event(name, val, e);
+                  });
+                })});
+          });
+          });
+
+          observer.observe(document, {attributes: false, childList: true, characterData: false, subtree:true});
+          
+          _varmap = querystring.parse();
+          k(null, _varmap);
         },
         set_query: function (key, value, varClass, k) {
             if (value !== undefined && value !== null && value !== '') {
@@ -269,6 +297,7 @@
             });
             RCloud.session.invoke_context_callback('selection_out', context_id, submit);
         },
+        
         log: function(content, k) {
             console.log(content);
             k();
@@ -278,5 +307,6 @@
             k();
         },
     };
+    window.RCloud.params = { instance:  result };
     return result;
 })()) /*jshint -W033 */ // this is an expression not a statement

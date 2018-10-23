@@ -33,40 +33,8 @@
   return(output)
 }
 
-div <- function(..., byRow = FALSE) {
-
-  listNames <- as.character(match.call())[-1]  # remove call 
-  
-  if(!missing(byRow))
-    listNames <- listNames[-length(listNames)] # remove byRow arg
-
-  myDiv <- vector(length = length(listNames))
-
-  if (byRow) {
-    rcloud.html.out(htmltools::div(id = "param"))
-    for(i in seq_len(length(listNames))) {
-      output <- .runWidgetCode(listNames[i])
-      rcw.append("#param", output)
-    }
-  } else {
-    for(i in seq_len(length(listNames))) {
-      myDiv[i] <- as.character(htmltools::div(id = paste0("param", i)))
-    }
-
-    rcloud.html.out(htmltools::div(HTML(myDiv)))
-    
-    for(i in seq_len(length(listNames))) {
-      output <- .runWidgetCode(listNames[i])
-      controls <- output
-      if(inherits(output, 'rcloud.params.param.set')) {
-        controls <- output$params
-      }
-      
-      lapply(controls, function(tag) {
-        ui.log.debug("Appending:", tag, " to: ", paste0("#param", i), " of type ", class(tag))
-        rcw.append(paste0("#param", i), tag)
-      });
-    }
-  }
+paramDiv <- function(...) {
+  divTag <- div(...)
+  divTag$attribs['data-rcloud-htmlwidgets-inline'] <- TRUE
+  return(divTag)
 }
-

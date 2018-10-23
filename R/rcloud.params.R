@@ -19,7 +19,7 @@ param <- function(inputTag, name, varClass, inputVal = NA, label = "") {
   if(any(is.na(defaultValue))) 
     defaultValue <- NULL
 
-  labelTag <- paste0('<label id="', paste0("rcloud-params-lab-", name),'">', paste0(label, ':&nbsp') , '</label>')
+  labelTag <- paste0('<label id="', paste0("rcloud-params-lab-", name),'">', paste0(label, ':&nbsp;') , '</label>')
   
   val <- input.QS[[name]] # Pull from query string if there ?
   
@@ -34,7 +34,8 @@ param <- function(inputTag, name, varClass, inputVal = NA, label = "") {
     assign(name, val2, envir=globalenv());
   } # make call back ocap so variable created in js side can be assigned back to R
 
-
+  
+  ui.log.debug("Parameter:", paste0("Name: ", name, ", Default: ", defaultValue, ", Current: ", val, ", Class: ", varClass))
   widgetId <- input.caps$add_edit_control(Rserve.context(), paste0(name, ':&nbsp'), name,
                                           defaultValue, val, inputTag, labelTag, 
                                           varClass, rcloud.support:::make.oc(callback))
@@ -46,7 +47,8 @@ param <- function(inputTag, name, varClass, inputVal = NA, label = "") {
 
 #' @export
 print.rcloud.params.control <- function(x, ..., view = interactive()) {
-  rcw.append("", x)
+  ui.log.debug("Printing widget: ", x$id)
+  rcloud.html.out(as.character(x$control_tag, rcloud_htmlwidgets_print = FALSE))
 }
 
 #' @export
@@ -78,5 +80,94 @@ submit <- function(f = NULL) {
   }
   
   invisible("rcloud-params-submit")
+}
+
+#'
+#'
+#' @export
+numericParam <- function(name, label = NULL, min = NA, max = NA, ...) {
+  
+  r_class <- "numeric"
+  
+  params_in <- list(...)
+  
+  ui.log.debug("Extra params: ", params_in)
+  
+  callbacks <- list()
+  
+  if('callbacks' %in% names(params_in)) {
+    callbacks_in <- params_in[['callbacks']];
+    for (callback in names(callbacks_in)) {
+      if(!is.list(callbacks_in[callback])) {
+        callbacks[callback] <- list(callbacks_in[callback])
+      } else {
+        callbacks[callback] <- callbacks_in[callback]
+      }
+    }
+  }
+  
+  params_in['callbacks'] <- NULL
+  
+  ui.log.debug("Extra params: ", params_in)
+  ui.log.debug("Callbacks: ", callbacks)
+  
+  label_id <- paste0("rcloud-params-lab-", name)
+  input_id <- paste0("rcloud-params-input-", name)
+  
+  inputTag <- tag('input', c(list(type = 'number', min = min, max = max), params_in))
+  inputTag$attribs$id <- input_id
+  
+  defaultValue <- lookup(name)
+  if (any(is.na(defaultValue))) 
+    defaultValue <- NULL
+  
+  # Set value
+  if(is.null(inputTag$attribs$value)){
+    inputTag$attribs$value <- ""
+    tagValue <-  NULL
+  } else{
+    tagValue <- inputTag$attribs$value
+  }
+  
+  qsValue <- input.QS[[name]] # Pull from query string if there ?
+  
+  if(!is.null(qsValue[1])) {
+    assign(name, qsValue, envir=globalenv()); # If not in querySting assign to globalEnv
+    value = qsValue
+  } else if(!is.null(tagValue)) {
+    value <- tagValue    # If variable is undefined but user has set a value in widget, use this
+  } else {
+    value <- defaultValue
+  }
+  
+  if(!is.null(value) && !is.na(value)) {
+    inputTag$attribs$value = value
+  }
+  
+  assignValueCallback <- function(var_name, var_value, ...) {
+    assign(var_name, var_value, envir=globalenv());
+  } # make call back ocap so variable created in js side can be assigned back to R
+  
+  if('change' %in% names(callbacks)) {
+    callbacks[['change']] <- append(list(assignValueCallback), callbacks[['change']])
+  } else {
+    callbacks[['change']] <- list(assignValueCallback)
+  }
+  
+  ui.log.debug("Parameter:", paste0("Name: ", name, ", Default: ", defaultValue, ", Current: ", value, ", Class: ", r_class))
+  controlTag <- tags$label(paste0(label, ': '), id=label_id, 'data-rcloud-param' = TRUE, 
+                           'data-rcloud-param-name' = name, 'data-rcloud-htmlwidgets-inline' = TRUE, 'data-rcloud-param-rclass=' = r_class, 
+                           'data-rcloud-param-default-value' = defaultValue, 'data-rcloud-param-value=' = value, 
+                           inputTag)
+  
+  
+  ui.log.debug("HTML widget id: ", label_id)
+  
+    
+  control_descriptor <- structure(list(id = label_id, callbacks = callbacks, r_class=r_class, control_tag=controlTag), class="rcloud.params.control")
+  
+  assign(name, value = control_descriptor, envir = .params)
+  
+  return(controlTag)
 }
 
