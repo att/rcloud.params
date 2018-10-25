@@ -30,4 +30,9 @@ rcw.set <- function(element, what){
   }
 } 
 
-
+#' @export
+rcw.plot <- function(element, plotFun, width = 300,height = 300) {
+  wp1 <- WebPlot(width = width, height = height)
+  do.call(plotFun, list(), envir = globalenv())
+  rcw.set(element, wp1)
+}

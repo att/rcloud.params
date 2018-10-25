@@ -13,28 +13,24 @@
 ## These functions have been copied to rcloud.params.js but will need to be updated 
 ## when the package is transfered.
 
-
-.runWidgetCode <- function(code) {
-  
-  output <- tryCatch({ 
-    tres <- eval(parse(text = code))
-    if(inherits(tres, 'shiny.tag')) {
-      return(list(tres))
-    }
-    tres
-  }, error = function(e) {
-    return(structure(list("msg", paste0("Failed to generate widget: ", as.character(e) )), class="code-eval-error"))
-  })
-  
-  ui.log.debug("Code:", code, ". Output: ", paste0(output, collapse = ","), " of type ", class(output))
-  if(inherits(output, "code-eval-error")) {
-    output <- list(paste0('<span class="error">Widget error: ', output$msg, '</span>'))
-  }
-  return(output)
-}
-
+#' @export
 paramDiv <- function(...) {
   divTag <- div(...)
-  divTag$attribs['data-rcloud-htmlwidgets-inline'] <- TRUE
+  divTag$attribs[.rcloudHtmlwidgetsInlineAttr()] <- TRUE
   return(divTag)
+}
+
+#' @export
+param_set2 <- function(..., callbacks = list(), wait_for = FALSE, name = paste0("submit_", as.integer(runif(1)*1e6))) {
+  
+  in_params <- list(...)
+  
+  if (length(in_params) == 0) {
+    stop('No parameters were provided!');
+  }
+  
+  content = tags$form(name=name, class="form-horizontal", in_params)
+  content$attribs[.rcloudHtmlwidgetsInlineAttr()] <- TRUE
+  
+  return(structure(list(content = content, callbacks = callbacks, wait_for = wait_for), class="rcloud.params.param.set"));
 }

@@ -45,18 +45,17 @@
         return _varmap[name] !== undefined && _varmap[name] !== null && _varmap[name] !== '';
     }
 
-    function get_input_value(label) { // takes jquery object and extracts value
-         if(!label.is('label')) {
-           return null;
+    function get_input_value(control) { // takes jquery object and extracts value
+         if(control.find('button').length > 0) {
+           return undefined;
          }
-
-         if (label[0].childNodes[1].nodeName.toLowerCase() == 'select') {
-            // if a select get all selected objects
-            return $('#' + label[0].id + ' option:selected').map(function () { return $(this).val(); }).get();
-          } else if(label[0].childNodes[1].type == 'checkbox') {
-            return label[0].querySelector("[id^='rcloud-params-']").checked;	
+         if (control.find('select').length > 0) {
+            let selectedOpts = _.filter($('#rcloud-params-control-choice2').find('option'), (op) => { return $(op).is(':selected');});
+            return _.map(selectedOpts, (op) => { return $(op).val(); });
+          } else if(control.find('input[type="checkbox"]').length > 0) {
+            return control.find('input[type="checkbox"]').is(':checked');	
           } else {
-            return label[0].querySelector("[id^='rcloud-params-']").value.trim();
+            return control.find('input').val().trim();
           }
     }
     
@@ -111,23 +110,62 @@
           _backend = RCloud.promisify_paths(ocaps, [  // jshint ignore:line
                     ['handle_event']
                 ], true);
+          
+          let attachCallbacks = (n) => {
+                let el = $(n);
+                let inputValue = get_input_value(el);
+                let name = el.data('rcloud-params-name');
+                let varClass = el.data('rcloud-params-rclass');
+                
+                _needed.push(name);
+                result.set_query(name, inputValue, varClass);
+                
+                let requiredValidationRule = (control) => {
+                      let val = get_input_value(control);
+                      if (val === null || val === undefined || val === '' || val.length === 0) val = undefined;
+                      
+                      if (val === undefined) {
+                        control.addClass('has-error');
+                      } else {
+                        control.removeClass('has-error');
+                      }
+                };
+                
+                requiredValidationRule(el);
+                
+                if(!el.is('submit')) {
+                  let input = el.find('select, input');
+                  
+                  input.on('change', function(e) {
+                      requiredValidationRule(el);
+                  });
+                  
+                  el.on('change', function (e) {
+                      let val = get_input_value(el);
+                      let name = el.data('rcloud-params-name');
+      
+                      if (val === '') val = undefined;
+                      result.set_query(name, val, el.data('rcloud-params-rclass'));
+                      _backend.handle_event(name, val, e);
+                  });
+                } else {
+                  el.on('click', function (e) {
+                      let val = get_input_value(el);
+                      let name = el.data('rcloud-params-name');
+                      _backend.handle_event(name, val, e);
+                  });
+                }
+          };
 
           var observer = new MutationObserver(function(mutations) {
             _.forEach(mutations, (m) => { 
-              _.forEach(m.addedNodes, (m) => { 
-                  _.forEach($(m).find('[data-rcloud-param="TRUE"]'), (n) => { 
-                  let el = $(n);
-                  console.log(el);
-                  el.on('change', function (e) {
-                      let val = get_input_value(el);
-                      let name = el.data('rcloud-param-name');
-      
-                      if (val === '') val = undefined;
-                      result.set_query(name, val, el.data('rcloud-param-rclass'));
-                      _backend.handle_event(name, val, e);
-                  });
-                })});
-          });
+              _.forEach(m.addedNodes, (n) => {
+                  if($(n).data('rcloud-params') && $(n).data('rcloud-params') === 'TRUE') {
+                    attachCallbacks(n);
+                  }
+                  _.forEach($(n).find('[data-rcloud-params="TRUE"]'), attachCallbacks);
+              });
+            });
           });
 
           observer.observe(document, {attributes: false, childList: true, characterData: false, subtree:true});
@@ -278,6 +316,7 @@
             _element_fragments[label.attr('id')] = label;
             k(label.attr('id'));      
         },
+
         wait_submit: function (context_id, k) {
             var submit = $('<input id = "rcloud-params-submit" type="button" value="Submit" />');
             submit.click(function () {
@@ -297,11 +336,38 @@
             });
             RCloud.session.invoke_context_callback('selection_out', context_id, submit);
         },
+
+        wait_for_group: function (context_id, group, k) {
+            executeInCellResultProcessingLoop(context_id, function(result_div) {
+              let el = $('label[data-rcloud-params-group="'+ group + '"]').find('input[type="submit"]');
+              if(el.length > 0) {
+                el.click(function (e) {
+                  let controls = $('label[data-rcloud-params-group="'+ group + '"]');
+                  var good_bad = _.partition(_needed, have_value);
+  
+                  result.error_highlight(good_bad[0], false);
+                  if (!good_bad[1].length) {
+                      el.attr('disabled', 'disabled');
+                      var varValues = _.pick(_varmap, _needed);
+                       _needed = [];  // clear _needed  only current variables need to be called back to r 
+                      k(combine(varValues, _varClass));
+                  } else {
+                      result.error_highlight(good_bad[1], true);
+                      result.focus(good_bad[1][0]);
+                  }
+                });
+              } else {
+                k('Group "' + group + '" does not have submitParam, please add one.', null);
+              }
+              
+          });
+        },
         
         log: function(content, k) {
             console.log(content);
             k();
         },
+
         debug: function(content, k) {
             console.debug(content);
             k();

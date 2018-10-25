@@ -101,4 +101,3 @@ param_set <- function(...){
   
   return(structure(list(params = result), class="rcloud.params.param.set"));
 }
-
