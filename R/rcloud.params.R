@@ -225,11 +225,7 @@ checkboxParam <- function(name, label = NULL, group = 'default', ...) {
                       tagValue <- if (is.logical(inputTag$attribs$checked)) {
                         inputTag$attribs$checked
                       } else {
-                        if(inputTag$attribs$checked == 'checked') {
-                          TRUE
-                        } else {
-                          FALSE
-                        }
+                        TRUE
                       }
                     }
                   }
