@@ -73,14 +73,21 @@ waitForGroup <- function(group = 'default') {
   input.caps$wait_for_group(Rserve.context(), group)
 }
 
-#' 
-#' Creates date-picker input control
-#' 
-#' @export
-#' 
-dateParam <- function(name, label = NULL, group = 'default', ...) {
-  
-  r_class <- "Date"
+.paramFactory <- function(name, label, r_class, group = 'default', 
+                         tagFactory = function(...) {
+                           do.call('tag', ...)
+                         }, 
+                         tagValueExtractor = .getValueFromTagAttribute, 
+                         qsValueExtractor = .getSingleValueFromQueryParameter, 
+                         nullValueProvider = function(value) {
+                           if(is.null(value) || any(is.na(value))) {
+                             ''
+                           } else {
+                             value
+                           }
+                         }, 
+                         rToTagValueMapper = .rToUIControlValueMapper('input'), 
+                         ...) {
   
   params_in <- list(...)
   
@@ -88,35 +95,32 @@ dateParam <- function(name, label = NULL, group = 'default', ...) {
   
   callbacks <- list()
   
-  if('callbacks' %in% names(params_in)) {
+  if ('callbacks' %in% names(params_in)) {
+    ui.log.debug("Has custom callbacks.")
     callbacks <- .processCallbackFunctions(params_in[['callbacks']])
   }
   
-  params_in['callbacks'] <- NULL
+  params_in$callbacks <- NULL
   
-  inputTag <- tag('input', c(type = 'date', params_in))
+  
+  ui.log.debug("Params for tag factory: ", params_in)
+  inputTag <- do.call('tagFactory', params_in)
   
   defaultValue <- .getVariableValue(name)
   
-  tagValue <- .getValueFromTagAttribute(inputTag)
+  tagValue <- tagValueExtractor(inputTag)
   
-  qsValue <- .getSingleValueFromQueryParameter(name, r_class)
+  qsValue <- qsValueExtractor(name, r_class)
   
   value <- .selectValue(qsValue, tagValue, defaultValue)
   
-  if(is.null(value) || is.na(value)) {
-    value = ''
-  }
+  value <- nullValueProvider(value)
   
   if (length(value) > 0) {
     assign(name, value, envir=globalenv())
   }
   
-  if(inherits(value, "Date")){
-    value <- as.character(value)
-  }
-  
-  inputTag <- .rToUIControlValueMapper('input')(inputTag, value)
+  inputTag <- rToTagValueMapper(inputTag, value)
   
   control_descriptor <- .createControl(label, name, group, defaultValue, value, r_class, inputTag, callbacks)
   
@@ -126,51 +130,30 @@ dateParam <- function(name, label = NULL, group = 'default', ...) {
 }
 
 #' 
+#' Creates date-picker input control
+#' 
+#' @export
+#' 
+dateParam <- function(name, label = NULL, group = 'default', ...) {
+  .paramFactory(name, label, 'Date', group, 
+                tagFactory = function(...) {
+                  inputTag <- tag('input', c(list(type = 'date'), list(...)))
+                }, 
+                ...)
+  
+}
+
+#' 
 #' Creates text input control
 #' 
 #' @export
 #' 
 textParam <- function(name, label = NULL, group = 'default', ...) {
-  
-  r_class <- "character"
-  
-  params_in <- list(...)
-  
-  ui.log.debug("Extra params: ", params_in)
-  
-  callbacks <- list()
-  
-  if('callbacks' %in% names(params_in)) {
-    callbacks <- .processCallbackFunctions(params_in[['callbacks']])
-  }
-  
-  params_in['callbacks'] <- NULL
-  
-  inputTag <- tag('input', c(list(type = 'text'), params_in))
-  
-  defaultValue <- .getVariableValue(name)
-  
-  tagValue <- .getValueFromTagAttribute(inputTag)
-  
-  qsValue <- .getSingleValueFromQueryParameter(name, r_class)
-  
-  value <- .selectValue(qsValue, tagValue, defaultValue)
-  
-  if(is.null(value) || is.na(value)) {
-    value = ''
-  }
-  
-  if (length(value) > 0) {
-    assign(name, value, envir=globalenv())
-  }
-
-  inputTag <- .rToUIControlValueMapper('input')(inputTag, value)
-  
-  control_descriptor <- .createControl(label, name, group, defaultValue, value, r_class, inputTag, callbacks)
-  
-  assign(name, value = control_descriptor, envir = .params)
-  
-  return(control_descriptor$control_tag)
+  .paramFactory(name, label, 'character', group, 
+                tagFactory = function(...) {
+                  inputTag <- tag('input', c(list(type = 'text'), list(...)))
+                }, 
+                ...)
 }
 
 #' 
@@ -181,60 +164,24 @@ textParam <- function(name, label = NULL, group = 'default', ...) {
 numericSliderParam <- function(name, label = NULL, min = NA, max = NA, group = 'default', ...) {
   numericParam(name, label, min, max, group, type = 'range', class='form-control slider', ...)
 }
-
 #' 
 #' Creates numeric input control
 #' 
 #' @export
 #' 
 numericParam <- function(name, label = NULL, min = NA, max = NA, group = 'default', ...) {
-  
-  r_class <- "numeric"
-  
-  params_in <- list(...)
-  
-  ui.log.debug("Extra params: ", params_in)
-  
-  callbacks <- list()
-  
-  if('callbacks' %in% names(params_in)) {
-    callbacks <- .processCallbackFunctions(params_in[['callbacks']])
-  }
-  
-  params_in['callbacks'] <- NULL
-  
-  type <- 'number'
-  
-  if ('type' %in% names(params_in)) {
-    type <- params_in$type
-    params_in$type <- NULL
-  }
-  
-  inputTag <- tag('input', c(list(type = type, min = min, max = max), params_in))
-  
-  defaultValue <- .getVariableValue(name)
-  
-  tagValue <- .getValueFromTagAttribute(inputTag)
-  
-  qsValue <- .getSingleValueFromQueryParameter(name, r_class)
-  
-  value <- .selectValue(qsValue, tagValue, defaultValue)
-  
-  if(is.null(value) || is.na(value)) {
-    value <- ''
-  }
-  
-  if (length(value) > 0) {
-    assign(name, value, envir=globalenv())
-  }
-  
-  inputTag <- .rToUIControlValueMapper('input')(inputTag, value)
-  
-  control_descriptor <- .createControl(label, name, group, defaultValue, value, r_class, inputTag, callbacks)
-  
-  assign(name, value = control_descriptor, envir = .params)
-  
-  return(control_descriptor$control_tag)
+  .paramFactory(name, label, 'numeric', group, 
+               tagFactory = function(...) {
+                 params_in <- list(...)
+                 type <- 'number'
+                 if ('type' %in% names(params_in)) {
+                   type <- params_in$type
+                   params_in$type <- NULL
+                 }
+                 
+                 inputTag <- tag('input', c(list(type = type), params_in))
+               }, 
+               min = min, max = max, ...)
 }
 
 #' 
@@ -243,46 +190,21 @@ numericParam <- function(name, label = NULL, min = NA, max = NA, group = 'defaul
 #' @export
 #' 
 selectParam <- function(name, label = NULL, choices = list(), group = 'default', ...) {
-  
-  r_class <- "character"
-  
-  params_in <- list(...)
-  
-  ui.log.debug("Extra params: ", params_in)
-  
-  callbacks <- list()
-  
-  if('callbacks' %in% names(params_in)) {
-    callbacks <- .processCallbackFunctions(params_in[['callbacks']])
-  }
-  
-  params_in['callbacks'] <- NULL
-  
-  inputTag <- tag('select', params_in)
-  
-  defaultValue <- .getVariableValue(name)
-  
-  tagValue <- .getValueFromTagAttribute(inputTag)
-  
-  qsValue <- .getMultiValueFromQueryParameter(name, r_class) 
-  
-  value <- .selectValue(qsValue, tagValue, defaultValue)
-  
-  if (is.null(value) || any(is.na(value))) {
-    value = c()
-  }
-  
-  if (length(value) > 0) {
-    assign(name, value, envir=globalenv())
-  }
-
-  inputTag <- .rToUIControlValueMapper('select')(inputTag, value, choices)
-  
-  control_descriptor <- .createControl(label, name, group, defaultValue, value, r_class, inputTag, callbacks)
-  
-  assign(name, value = control_descriptor, envir = .params)
-  
-  return(control_descriptor$control_tag)
+  .paramFactory(name, label, 'character', group, 
+                tagFactory = function(...) {
+                  tag('select', list(...))
+                }, 
+                tagValueExtractor = .getValueFromTagAttribute, 
+                qsValueExtractor = .getMultiValueFromQueryParameter, 
+                nullValueProvider = function(value) {
+                  if(is.null(value) || any(is.na(value))) {
+                    c()
+                  } else {
+                    value
+                  }
+                }, 
+                rToTagValueMapper = .rToUIControlValueMapper('select', choices), 
+                ...)
 }
 
 #' 
@@ -292,60 +214,36 @@ selectParam <- function(name, label = NULL, choices = list(), group = 'default',
 #' 
 checkboxParam <- function(name, label = NULL, group = 'default', ...) {
   
-  r_class <- "logical"
-  
-  params_in <- list(...)
-  
-  ui.log.debug("Extra params: ", params_in)
-  
-  callbacks <- list()
-  
-  if('callbacks' %in% names(params_in)) {
-    callbacks <- .processCallbackFunctions(params_in[['callbacks']])
-  }
-  
-  params_in['callbacks'] <- NULL
-  
-  inputTag <- tags$input(type='checkbox', class="checkbox", params_in)
-  
-  defaultValue <- .getVariableValue(name)
-  
-  tagValue <- NULL
-  if('checked' %in% names(inputTag$attribs)) {
-    if (!is.null(inputTag$attribs$checked) && !any(is.na(inputTag$attribs$checked))) {
-      tagValue <- if (is.logical(inputTag$attribs$checked)) {
-        inputTag$attribs$checked
-      } else {
-        if(inputTag$attribs$checked == 'checked') {
-          TRUE
-        } else {
-          FALSE
-        }
-      }
-    }
-  }
-  
-  qsValue <- .getSingleValueFromQueryParameter(name, r_class)
-  
-  value <- .selectValue(qsValue, tagValue, defaultValue)
-  
-  ui.log.debug("Value: ", paste(value, collapse = ","))
-  
-  if (is.null(value) || is.na(value)) {
-    value <- FALSE
-  }
-  
-  if (length(value) > 0) {
-    assign(name, value, envir=globalenv())
-  }
-
-  inputTag <- .rToUIControlValueMapper('checkbox')(inputTag, value)
-  
-  control_descriptor <- .createControl(label, name, group, defaultValue, value, r_class, inputTag, callbacks)
-  
-  assign(name, value = control_descriptor, envir = .params)
-  
-  return(control_descriptor$control_tag)
+  .paramFactory(name, label, 'logical', group, 
+                tagFactory = function(...) {
+                  tags$input(type='checkbox', class="checkbox", ...)
+                }, 
+                tagValueExtractor = function(inputTag) {
+                  tagValue <- NULL
+                  if('checked' %in% names(inputTag$attribs)) {
+                    if (!is.null(inputTag$attribs$checked) && !any(is.na(inputTag$attribs$checked))) {
+                      tagValue <- if (is.logical(inputTag$attribs$checked)) {
+                        inputTag$attribs$checked
+                      } else {
+                        if(inputTag$attribs$checked == 'checked') {
+                          TRUE
+                        } else {
+                          FALSE
+                        }
+                      }
+                    }
+                  }
+                  tagValue
+                }, 
+                nullValueProvider = function(value) {
+                  if(is.null(value) || is.na(value)) {
+                    FALSE
+                  } else {
+                    value
+                  }
+                }, 
+                rToTagValueMapper = .rToUIControlValueMapper('checkbox'), 
+                ...)
 }
 
 .controlLabelId <- function(name) {
@@ -492,12 +390,13 @@ checkboxParam <- function(name, label = NULL, group = 'default', ...) {
          as.character)
 }
 
-.rToUIControlValueMapper <- function(control_type) {
+.rToUIControlValueMapper <- function(control_type, choices = NULL) {
+  localChoices <- choices
   switch(control_type, 
-         'select' = function(tag, value, choices) {
+         'select' = function(tag, value) {
            options <- NULL
-           if (is.null(names(choices))) {
-             options <- list(lapply(choices, function(c) {
+           if (is.null(names(localChoices))) {
+             options <- list(lapply(localChoices, function(c) {
                res <- tags$option(c)
                typedChoice <- as.character(c)
                if (typedChoice %in% value)
@@ -505,8 +404,8 @@ checkboxParam <- function(name, label = NULL, group = 'default', ...) {
                res
              }))
            } else {
-             options <- list(lapply(names(choices), function(c) {
-               res <- tags$option(choices[[c]], value=c)
+             options <- list(lapply(names(localChoices), function(c) {
+               res <- tags$option(localChoices[[c]], value=c)
                if (c %in% value)
                  res$attribs$selected = NA
                res
