@@ -14,15 +14,6 @@ print.rcloud.params.control <- function(x, ..., view = interactive()) {
   rcloud.html.out(as.character(x$control_tag, rcloud_htmlwidgets_print = FALSE))
 }
 
-#' @export
-print.rcloud.params.param.set <- function(x, ..., view = interactive()) {
-  print(x$content)
-  
-  if(x$wait_for) {
-    waitForGroup()
-  }
-}
-
 
 #' Returns output of widget to R side when clicked
 #'

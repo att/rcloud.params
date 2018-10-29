@@ -20,17 +20,46 @@ paramDiv <- function(...) {
   return(divTag)
 }
 
+
+
 #' @export
-param_set2 <- function(..., callbacks = list(), wait_for = FALSE, name = paste0("submit_", as.integer(runif(1)*1e6))) {
+print.rcloud.params.param.set <- function(x, ..., view = interactive()) {
+  print(x$content)
+  
+  ui.log.debug("Should I wait? ", x$wait_for)
+  if(x$wait_for) {
+    controlValues <- waitForGroup()
+    
+    if(!is.null(controlValues)) {
+      lapply(controlValues, function(el) {
+        r_class <- if(is.null(el$r_class)) {
+          'character'
+        } else {
+          el$r_class
+        }
+        assign(el$name, .uiToRValueMapper(r_class)(el$value))
+      });
+    }
+  }
+  invisible(TRUE)
+}
+
+#' @export
+paramSet <- function(..., callbacks = list(), wait_for = FALSE, name = paste0("form_", as.integer(runif(1)*1e6)), group = 'default') {
   
   in_params <- list(...)
   
   if (length(in_params) == 0) {
-    stop('No parameters were provided!');
+    stop('No parameters were provided!')
   }
   
   content = tags$form(name = name, in_params)
   content$attribs[.rcloudHtmlwidgetsInlineAttr()] <- TRUE
+  content$attribs[.rcloudParamsAttrNamespace()] <- TRUE
+  content$attribs[.rcloudParamsAttr('group')] <- group;
   
-  return(structure(list(content = content, callbacks = callbacks, wait_for = wait_for), class="rcloud.params.param.set"));
+  param_set_descriptor <- structure(list(content = content, callbacks = callbacks, wait_for = wait_for), class="rcloud.params.param.set")
+  assign(name, value = param_set_descriptor, envir = .params)
+  
+  return(param_set_descriptor)
 }
