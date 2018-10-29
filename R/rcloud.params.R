@@ -102,13 +102,7 @@ dateParam <- function(name, label = NULL, group = 'default', ...) {
   
   qsValue <- .getSingleValueFromQueryParameter(name, r_class)
   
-  if(!is.null(qsValue)) {
-    value <- qsValue
-  } else if(!is.null(tagValue)) {
-    value <- tagValue    # If variable is undefined but user has set a value in widget, use this
-  } else {
-    value <- defaultValue
-  }
+  value <- .selectValue(qsValue, tagValue, defaultValue)
   
   if(is.null(value) || is.na(value)) {
     value = ''
@@ -160,13 +154,7 @@ textParam <- function(name, label = NULL, group = 'default', ...) {
   
   qsValue <- .getSingleValueFromQueryParameter(name, r_class)
   
-  if(!is.null(qsValue)) {
-    value <- qsValue
-  } else if(!is.null(tagValue)) {
-    value <- tagValue    # If variable is undefined but user has set a value in widget, use this
-  } else {
-    value <- defaultValue
-  }
+  value <- .selectValue(qsValue, tagValue, defaultValue)
   
   if(is.null(value) || is.na(value)) {
     value = ''
@@ -230,13 +218,7 @@ numericParam <- function(name, label = NULL, min = NA, max = NA, group = 'defaul
   
   qsValue <- .getSingleValueFromQueryParameter(name, r_class)
   
-  if(!is.null(qsValue)) {
-    value <- qsValue
-  } else if(!is.null(tagValue)) {
-    value <- tagValue    # If variable is undefined but user has set a value in widget, use this
-  } else {
-    value <- defaultValue
-  }
+  value <- .selectValue(qsValue, tagValue, defaultValue)
   
   if(is.null(value) || is.na(value)) {
     value <- ''
@@ -284,25 +266,10 @@ selectParam <- function(name, label = NULL, choices = list(), group = 'default',
   
   qsValue <- .getMultiValueFromQueryParameter(name, r_class) 
   
-  value <- NULL
-  if (!is.null(qsValue)) {
-    value <- qsValue
-  } else if (!is.null(tagValue)) {
-    value <- tagValue    # If variable is undefined but user has set a value in widget, use this
-  } else {
-    value <- defaultValue
-  }
+  value <- .selectValue(qsValue, tagValue, defaultValue)
   
   if (is.null(value) || any(is.na(value))) {
     value = c()
-  }
-  
-  if (length(value) == 0 && (!'multiple' %in% names(inputTag$attribs)) && length(choices) > 0) {
-    value <- if (is.null(names(choices))) {
-      choices[1]
-    } else {
-      names(choices)[1]
-    }
   }
   
   if (length(value) > 0) {
@@ -360,13 +327,7 @@ checkboxParam <- function(name, label = NULL, group = 'default', ...) {
   
   qsValue <- .getSingleValueFromQueryParameter(name, r_class)
   
-  if(!is.null(qsValue)) {
-    value <- qsValue
-  } else if (!is.null(tagValue)) {
-    value <- tagValue    # If variable is undefined but user has set a value in widget, use this
-  } else {
-    value <- defaultValue
-  }
+  value <- .selectValue(qsValue, tagValue, defaultValue)
   
   ui.log.debug("Value: ", paste(value, collapse = ","))
   
@@ -473,6 +434,15 @@ checkboxParam <- function(name, label = NULL, group = 'default', ...) {
   
 }
 
+.selectValue <- function(qsValue, tagValue, defaultValue) {
+  if(!is.null(qsValue)) {
+    qsValue
+  } else if (!is.null(tagValue)) {
+    tagValue    # If variable is undefined but user has set a value in widget, use this
+  } else {
+    defaultValue
+  }
+}
 
 .getMultiValueFromQueryParameter <- function(name, r_class) {
   qsValue <- input.QS[[name]]
@@ -542,6 +512,13 @@ checkboxParam <- function(name, label = NULL, group = 'default', ...) {
                res
              })
              )
+           }
+           
+           if (length(value) == 0) {
+             if(!'multiple' %in% names(tag$attribs)) {
+               # Add default disabled option to reflect lack of selection
+               options <- c(list(tags$option('-- select --', 'hidden' = NA, 'disabled' = NA, 'selected' = NA, 'value' = NA)), options)
+             }
            }
            
            tag$children <- options

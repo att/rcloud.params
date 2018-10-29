@@ -51,7 +51,7 @@
          }
          if (control.find('select').length > 0) {
             let selectedOpts = _.filter($(control).find('option'), (op) => { 
-              return $(op).is(':selected');
+              return $(op).is(':selected') && !$(op).is(':disabled');
             });
             return _.map(selectedOpts, (op) => { 
                 return $(op).val();
