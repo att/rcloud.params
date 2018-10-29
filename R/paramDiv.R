@@ -29,7 +29,7 @@ param_set2 <- function(..., callbacks = list(), wait_for = FALSE, name = paste0(
     stop('No parameters were provided!');
   }
   
-  content = tags$form(name=name, class="form-horizontal", in_params)
+  content = tags$form(name = name, in_params)
   content$attribs[.rcloudHtmlwidgetsInlineAttr()] <- TRUE
   
   return(structure(list(content = content, callbacks = callbacks, wait_for = wait_for), class="rcloud.params.param.set"));

@@ -50,8 +50,12 @@
            return undefined;
          }
          if (control.find('select').length > 0) {
-            let selectedOpts = _.filter($('#rcloud-params-control-choice2').find('option'), (op) => { return $(op).is(':selected');});
-            return _.map(selectedOpts, (op) => { return $(op).val(); });
+            let selectedOpts = _.filter($(control).find('option'), (op) => { 
+              return $(op).is(':selected');
+            });
+            return _.map(selectedOpts, (op) => { 
+                return $(op).val();
+            });
           } else if(control.find('input[type="checkbox"]').length > 0) {
             return control.find('input[type="checkbox"]').is(':checked');	
           } else {
@@ -84,7 +88,7 @@
     // Schedules execution of a function within cell result processing loop to ensure that any UI element referenes used in the function
     // were added to the result pane.
     function executeInCellResultProcessingLoop(context_id, fun) {
-      RCloud.session.invoke_context_callback('js_out', context_id, fun);
+      RCloud.session.invoke_context_callback('function_call', context_id, fun);
     }
     // Used to combine value with class to push back to R  
     combine = (obj1, obj2) => {

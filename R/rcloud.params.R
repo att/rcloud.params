@@ -1,48 +1,11 @@
-#' Lookup variable name in globalenv
+#' lookup variable value in globalenv
 #'
-lookup <- function(name) {
+.getVariableValue <- function(name) {
   vals <- mget(name, envir=globalenv(), ifnotfound=NA)
-  vals[[name]]
-}
-
-#' Pass parameters to javascript
-#'
-#' Takes HTML string and passes to javascript. Variables can be updated through widget then passed back to R
-#'
-#' @param inputTag HTML string to create widget
-#' @param name varibale name
-#' @param varClass class of variable 
-
-param <- function(inputTag, name, varClass, inputVal = NA, label = "") {
-
-  defaultValue <- lookup(name)
-  if(any(is.na(defaultValue))) 
-    defaultValue <- NULL
-
-  labelTag <- paste0('<label id="', paste0("rcloud-params-lab-", name),'">', paste0(label, ':&nbsp;') , '</label>')
-  
-  val <- input.QS[[name]] # Pull from query string if there ?
-  
-  if(!is.null(val[1])) {
-    assign(name, val, envir=globalenv()); # If not in querySting assign to globalEnv
-  }
-
-  if(is.null(val) & !is.na(inputVal[1]))
-    val <- inputVal    # If variable is undefined but user has set a value in widget, use this
-  
-  callback <- function(val2) {
-    assign(name, val2, envir=globalenv());
-  } # make call back ocap so variable created in js side can be assigned back to R
-
-  
-  ui.log.debug("Parameter:", paste0("Name: ", name, ", Default: ", defaultValue, ", Current: ", val, ", Class: ", varClass))
-  widgetId <- input.caps$add_edit_control(Rserve.context(), paste0(name, ':&nbsp'), name,
-                                          defaultValue, val, inputTag, labelTag, 
-                                          varClass, rcloud.support:::make.oc(callback))
-  
-  ui.log.debug("HTML widget id: ", widgetId)
-
-  return(structure(list( id = widgetId, name = name), class="rcloud.params.control"))
+  val <- vals[[name]]
+  if (any(is.na(val))) 
+    val <- NULL
+  val
 }
 
 #' @export
@@ -110,8 +73,11 @@ waitForGroup <- function(group = 'default') {
   input.caps$wait_for_group(Rserve.context(), group)
 }
 
-#'
+#' 
+#' Creates date-picker input control
+#' 
 #' @export
+#' 
 dateParam <- function(name, label = NULL, group = 'default', ...) {
   
   r_class <- "Date"
@@ -130,36 +96,33 @@ dateParam <- function(name, label = NULL, group = 'default', ...) {
   
   inputTag <- tag('input', c(type = 'date', params_in))
   
-  defaultValue <- lookup(name)
-  if (any(is.na(defaultValue))) 
-    defaultValue <- NULL
+  defaultValue <- .getVariableValue(name)
   
-  # Set value
-  if(is.null(inputTag$attribs$value)){
-    inputTag$attribs$value <- ""
-    tagValue <-  NULL
-  } else{
-    tagValue <- inputTag$attribs$value
-  }
+  tagValue <- .getValueFromTagAttribute(inputTag)
   
-  qsValue <- input.QS[[name]] # Pull from query string if there ?
+  qsValue <- .getSingleValueFromQueryParameter(name, r_class)
   
-  if(!is.null(qsValue[1])) {
-    assign(name, qsValue, envir=globalenv()); # If not in querySting assign to globalEnv
-    value = qsValue
+  if(!is.null(qsValue)) {
+    value <- qsValue
   } else if(!is.null(tagValue)) {
     value <- tagValue    # If variable is undefined but user has set a value in widget, use this
   } else {
     value <- defaultValue
   }
   
+  if(is.null(value) || is.na(value)) {
+    value = ''
+  }
+  
+  if (length(value) > 0) {
+    assign(name, value, envir=globalenv())
+  }
+  
   if(inherits(value, "Date")){
     value <- as.character(value)
   }
   
-  if(!is.null(value) && !is.na(value)) {
-    inputTag$attribs$value = value
-  }
+  inputTag <- .rToUIControlValueMapper('input')(inputTag, value)
   
   control_descriptor <- .createControl(label, name, group, defaultValue, value, r_class, inputTag, callbacks)
   
@@ -168,8 +131,11 @@ dateParam <- function(name, label = NULL, group = 'default', ...) {
   return(control_descriptor$control_tag)
 }
 
-#'
+#' 
+#' Creates text input control
+#' 
 #' @export
+#' 
 textParam <- function(name, label = NULL, group = 'default', ...) {
   
   r_class <- "character"
@@ -188,32 +154,29 @@ textParam <- function(name, label = NULL, group = 'default', ...) {
   
   inputTag <- tag('input', c(list(type = 'text'), params_in))
   
-  defaultValue <- lookup(name)
-  if (any(is.na(defaultValue))) 
-    defaultValue <- NULL
+  defaultValue <- .getVariableValue(name)
   
-  # Set value
-  if(is.null(inputTag$attribs$value)){
-    inputTag$attribs$value <- ""
-    tagValue <-  NULL
-  } else{
-    tagValue <- inputTag$attribs$value
-  }
+  tagValue <- .getValueFromTagAttribute(inputTag)
   
-  qsValue <- input.QS[[name]] # Pull from query string if there ?
+  qsValue <- .getSingleValueFromQueryParameter(name, r_class)
   
-  if(!is.null(qsValue[1])) {
-    assign(name, qsValue, envir=globalenv()); # If not in querySting assign to globalEnv
-    value = qsValue
+  if(!is.null(qsValue)) {
+    value <- qsValue
   } else if(!is.null(tagValue)) {
     value <- tagValue    # If variable is undefined but user has set a value in widget, use this
   } else {
     value <- defaultValue
   }
   
-  if(!is.null(value) && !is.na(value)) {
-    inputTag$attribs$value = value
+  if(is.null(value) || is.na(value)) {
+    value = ''
   }
+  
+  if (length(value) > 0) {
+    assign(name, value, envir=globalenv())
+  }
+
+  inputTag <- .rToUIControlValueMapper('input')(inputTag, value)
   
   control_descriptor <- .createControl(label, name, group, defaultValue, value, r_class, inputTag, callbacks)
   
@@ -222,12 +185,20 @@ textParam <- function(name, label = NULL, group = 'default', ...) {
   return(control_descriptor$control_tag)
 }
 
+#' 
+#' Creates numeric slider input control
+#' 
+#' @export
+#' 
 numericSliderParam <- function(name, label = NULL, min = NA, max = NA, group = 'default', ...) {
-  numericParam(name, label, min, max, group, type = 'range', class='slider', ...)
+  numericParam(name, label, min, max, group, type = 'range', class='form-control slider', ...)
 }
 
-#'
+#' 
+#' Creates numeric input control
+#' 
 #' @export
+#' 
 numericParam <- function(name, label = NULL, min = NA, max = NA, group = 'default', ...) {
   
   r_class <- "numeric"
@@ -251,35 +222,31 @@ numericParam <- function(name, label = NULL, min = NA, max = NA, group = 'defaul
     params_in$type <- NULL
   }
   
-  
   inputTag <- tag('input', c(list(type = type, min = min, max = max), params_in))
   
-  defaultValue <- lookup(name)
-  if (any(is.na(defaultValue))) 
-    defaultValue <- NULL
+  defaultValue <- .getVariableValue(name)
   
-  # Set value
-  if(is.null(inputTag$attribs$value)){
-    inputTag$attribs$value <- ""
-    tagValue <-  NULL
-  } else{
-    tagValue <- inputTag$attribs$value
-  }
+  tagValue <- .getValueFromTagAttribute(inputTag)
   
-  qsValue <- input.QS[[name]] # Pull from query string if there ?
+  qsValue <- .getSingleValueFromQueryParameter(name, r_class)
   
-  if(!is.null(qsValue[1])) {
-    assign(name, qsValue, envir=globalenv()); # If not in querySting assign to globalEnv
-    value = qsValue
+  if(!is.null(qsValue)) {
+    value <- qsValue
   } else if(!is.null(tagValue)) {
     value <- tagValue    # If variable is undefined but user has set a value in widget, use this
   } else {
     value <- defaultValue
   }
   
-  if(!is.null(value) && !is.na(value)) {
-    inputTag$attribs$value = value
+  if(is.null(value) || is.na(value)) {
+    value <- ''
   }
+  
+  if (length(value) > 0) {
+    assign(name, value, envir=globalenv())
+  }
+  
+  inputTag <- .rToUIControlValueMapper('input')(inputTag, value)
   
   control_descriptor <- .createControl(label, name, group, defaultValue, value, r_class, inputTag, callbacks)
   
@@ -288,6 +255,11 @@ numericParam <- function(name, label = NULL, min = NA, max = NA, group = 'defaul
   return(control_descriptor$control_tag)
 }
 
+#' 
+#' Creates select input control
+#' 
+#' @export
+#' 
 selectParam <- function(name, label = NULL, choices = list(), group = 'default', ...) {
   
   r_class <- "character"
@@ -304,68 +276,40 @@ selectParam <- function(name, label = NULL, choices = list(), group = 'default',
   
   params_in['callbacks'] <- NULL
   
-  
   inputTag <- tag('select', params_in)
   
+  defaultValue <- .getVariableValue(name)
   
-  defaultValue <- lookup(name)
-  if (any(is.na(defaultValue))) 
-    defaultValue <- NULL
+  tagValue <- .getValueFromTagAttribute(inputTag)
   
-  # Set value
-  if (is.null(inputTag$attribs$value)) {
-    inputTag$attribs$value <- NULL
-    tagValue <-  NULL
-  } else {
-    tagValue <- inputTag$attribs$value
-    inputTag$attribs$value <- NULL
-  }
-  
-  qsValue <- input.QS[[name]] # Pull from query string if there ?
+  qsValue <- .getMultiValueFromQueryParameter(name, r_class) 
   
   value <- NULL
-  if (!is.null(qsValue[1])) {
-    qsValues <- strsplit(qsValue[1], ',')[[1]]
-    if (length(qsValues) > 0) {
-      assign(name, qsValues, envir=globalenv()); # If in querySting assign to globalEnv
-      value <- qsValues
-    } else {
-      # value set but it is empty
-      value <- c()
-    }
+  if (!is.null(qsValue)) {
+    value <- qsValue
   } else if (!is.null(tagValue)) {
-    value <- c(tagValue)    # If variable is undefined but user has set a value in widget, use this
+    value <- tagValue    # If variable is undefined but user has set a value in widget, use this
   } else {
-    value <- c(defaultValue)
+    value <- defaultValue
   }
   
-  ui.log.debug("Value: ", paste(value, collapse = ","))
-  if (is.null(value) || is.na(value)) {
+  if (is.null(value) || any(is.na(value))) {
     value = c()
   }
-
-  options <- NULL
-  if (is.null(names(choices))) {
-    options <- list(lapply(choices, function(c) {
-      res <- tags$option(c)
-      typedChoice <- as.character(c)
-      if (typedChoice %in% value)
-        res$attribs$selected = NA
-      res
-      }))
-  } else {
-    options <- list(lapply(names(choices), function(c) {
-      res <- tags$option(choices[[c]], value=c)
-      if (c %in% value)
-        res$attribs$selected = NA
-      res
-    })
-    )
+  
+  if (length(value) == 0 && (!'multiple' %in% names(inputTag$attribs)) && length(choices) > 0) {
+    value <- if (is.null(names(choices))) {
+      choices[1]
+    } else {
+      names(choices)[1]
+    }
   }
   
-  inputTag$children <- options
-  inputTag$attribs$choices <- NULL
-  inputTag$attribs$value <- NULL
+  if (length(value) > 0) {
+    assign(name, value, envir=globalenv())
+  }
+
+  inputTag <- .rToUIControlValueMapper('select')(inputTag, value, choices)
   
   control_descriptor <- .createControl(label, name, group, defaultValue, value, r_class, inputTag, callbacks)
   
@@ -374,6 +318,11 @@ selectParam <- function(name, label = NULL, choices = list(), group = 'default',
   return(control_descriptor$control_tag)
 }
 
+#' 
+#' Creates checkbox input control
+#' 
+#' @export
+#' 
 checkboxParam <- function(name, label = NULL, group = 'default', ...) {
   
   r_class <- "logical"
@@ -392,48 +341,44 @@ checkboxParam <- function(name, label = NULL, group = 'default', ...) {
   
   inputTag <- tags$input(type='checkbox', class="checkbox", params_in)
   
-  defaultValue <- lookup(name)
-  if (any(is.na(defaultValue))) 
-    defaultValue <- NULL
+  defaultValue <- .getVariableValue(name)
   
-  # Set value
-  if (is.null(inputTag$attribs$checked)) {
-    inputTag$attribs$checked <- NULL
-    tagValue <-  NULL
-  } else {
-    tagValue <- if (is.logical(inputTag$attribs$checked)) {
-      inputTag$attribs$checked
-    } else {
-      if(inputTag$attribs$checked == 'checked') {
-        TRUE
+  tagValue <- NULL
+  if('checked' %in% names(inputTag$attribs)) {
+    if (!is.null(inputTag$attribs$checked) && !any(is.na(inputTag$attribs$checked))) {
+      tagValue <- if (is.logical(inputTag$attribs$checked)) {
+        inputTag$attribs$checked
       } else {
-        FALSE
+        if(inputTag$attribs$checked == 'checked') {
+          TRUE
+        } else {
+          FALSE
+        }
       }
     }
-    inputTag$attribs$checked <- NULL
   }
   
-  qsValue <- input.QS[[name]] # Pull from query string if there ?
+  qsValue <- .getSingleValueFromQueryParameter(name, r_class)
   
-  value <- FALSE
-  if (!is.null(qsValue[1])) {
-    qsValues <- as.logical(qsValue)
-    assign(name, qsValues, envir=globalenv()); # If in querySting assign to globalEnv
-    value <- qsValues
+  if(!is.null(qsValue)) {
+    value <- qsValue
   } else if (!is.null(tagValue)) {
-    value <- c(tagValue)    # If variable is undefined but user has set a value in widget, use this
+    value <- tagValue    # If variable is undefined but user has set a value in widget, use this
   } else {
-    value <- c(defaultValue)
+    value <- defaultValue
   }
   
   ui.log.debug("Value: ", paste(value, collapse = ","))
+  
   if (is.null(value) || is.na(value)) {
-    value = FALSE
+    value <- FALSE
   }
   
-  if(value) {
-    inputTag$attribs$checked <- value
+  if (length(value) > 0) {
+    assign(name, value, envir=globalenv())
   }
+
+  inputTag <- .rToUIControlValueMapper('checkbox')(inputTag, value)
   
   control_descriptor <- .createControl(label, name, group, defaultValue, value, r_class, inputTag, callbacks)
   
@@ -484,25 +429,21 @@ checkboxParam <- function(name, label = NULL, group = 'default', ...) {
     input_tag$attribs$class <- 'form-control'
   }
   
-  labelMsg <- if(!is.null(label) && label != '') {
-    paste0(label, ': ')
-  } else {
-    ''
-  }
+  labelMsg <- label
   
   ui.log.debug("Parameter - ", paste0("Name: ", name, ", Default: ", paste(default_value, collapse = ","), ", Current: ", paste(param_value, collapse=","), ", Class: ", r_class))
 
-  # if('type' %in% names(input_tag$attribs) && input_tag$attribs$type == 'checkbox') {
-  #   # just checkbox is a special case...
-  #   input_tag$attribs$class <- NULL
-  #   
-  #   label_tag <- tags$label(labelMsg, 
-  #                           id = label_id,
-  #                           'for' = input_id)
-  #   
-  #   control_tag <- paramDiv(id = control_id, 
-  #                           'class' = 'form-group', div(class='checkbox', label_tag, input_tag));
-  # } else {
+  if('type' %in% names(input_tag$attribs) && input_tag$attribs$type == 'checkbox') {
+    # just checkbox is a special case...
+    input_tag$attribs$class <- NULL
+
+    label_tag <- tags$label(labelMsg,
+                            id = label_id,
+                            'for' = input_id)
+
+    control_tag <- paramDiv(id = control_id,
+                            'class' = 'form-group', div(class='checkbox', label_tag, input_tag));
+  } else {
     label_tag <- tags$label(labelMsg, 
                             id = label_id,
                             'class' = 'control-label',
@@ -510,12 +451,13 @@ checkboxParam <- function(name, label = NULL, group = 'default', ...) {
     
     control_tag <- paramDiv(id = control_id, 
                             'class' = 'form-group', label_tag, input_tag)
-  # }
+  }
 
   control_tag$attribs[.rcloudParamsAttrNamespace()] = TRUE
   control_tag$attribs[varNameAttr] = name
   
   assignValueCallback <- function(var_name, var_value, ...) {
+    ui.log.debug(var_name, paste0(var_value, collapse = ","), typeof(var_value))
     assign(var_name, var_value, envir=globalenv());
   } # make call back ocap so variable created in js side can be assigned back to R
   
@@ -531,10 +473,111 @@ checkboxParam <- function(name, label = NULL, group = 'default', ...) {
   
 }
 
+
+.getMultiValueFromQueryParameter <- function(name, r_class) {
+  qsValue <- input.QS[[name]]
+  value <- NULL
+  if (!is.null(qsValue[1])) {
+    valueMapper <- .uiToRValueMapper(r_class)
+    parser <- .qsMultiValueParser()
+    value <- valueMapper(parser(qsValue))
+  }
+  value
+}
+
+.getSingleValueFromQueryParameter <- function(name, r_class) {
+  qsValue <- input.QS[[name]]
+  value <- NULL
+  if (!is.null(qsValue[1])) {
+    valueMapper <- .uiToRValueMapper(r_class)
+    parser <- .qsSingleValueParser()
+    value <- valueMapper(parser(qsValue))
+  }
+  value
+}
+
+.qsMultiValueParser <- function(value_type) {
+  function(value) {
+           values <- strsplit(value[1], ',')[[1]]
+           if (length(values) > 0) {
+             values
+           } else {
+             c()
+           }
+         }
+}
+
+.qsSingleValueParser <- function() {
+  function(value) {
+     value
+  }
+}
+
+.uiToRValueMapper <- function(r_class) {
+  switch(r_class, 
+         'character' = as.character,
+         'Date' = as.Date,
+         'numeric' = as.numeric,
+         'logical' = as.logical,
+         as.character)
+}
+
+.rToUIControlValueMapper <- function(control_type) {
+  switch(control_type, 
+         'select' = function(tag, value, choices) {
+           options <- NULL
+           if (is.null(names(choices))) {
+             options <- list(lapply(choices, function(c) {
+               res <- tags$option(c)
+               typedChoice <- as.character(c)
+               if (typedChoice %in% value)
+                 res$attribs$selected = NA
+               res
+             }))
+           } else {
+             options <- list(lapply(names(choices), function(c) {
+               res <- tags$option(choices[[c]], value=c)
+               if (c %in% value)
+                 res$attribs$selected = NA
+               res
+             })
+             )
+           }
+           
+           tag$children <- options
+           tag$attribs$choices <- NULL
+           tag$attribs$value <- NULL
+           tag
+         },
+         'checkbox' = function(tag, value) {
+           tag$attribs$value <- NULL
+           if (value) {
+             tag$attribs$checked <- value
+           } else {
+             tag$attribs$checked <- NULL
+           }
+           tag
+         },
+         function(tag, value) {
+           tag$attribs$value <- as.character(value)
+           tag
+         })
+}
+
+.getValueFromTagAttribute <- function(inputTag) {
+  tagValue <- NULL
+  if('value' %in% names(inputTag$attribs)) {
+    if (!is.null(inputTag$attribs$value) && !any(is.na(inputTag$attribs$value))) {
+      tagValue <- inputTag$attribs$value
+    }
+  }
+  tagValue
+}
+
 .processCallbackFunctions <- function(callbacksParam = list()) {
   callbacks <- list()
   for (callback in names(callbacksParam)) {
-    if(!is.list(callbacksParam[callback])) {
+    if (!is.list(callbacksParam[callback])) {
       callbacks[callback] <- list(callbacksParam[callback])
     } else {
       callbacks[callback] <- callbacksParam[callback]

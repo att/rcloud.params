@@ -25,7 +25,6 @@ input.QS <- NULL
   
 }
 
-
 .isDebugEnabled <- function() {
   OPT <- "rcloud.params.debug.enabled"
   if(rcloud.support:::nzConf(OPT)) {
@@ -39,11 +38,12 @@ dispatchEvent <- function(var_name, var_value, e) {
   ui.log.debug("Event type", e$type)
   if(!is.null(var_name)) {
     if(var_name %in% names(.params)) {
-      control <- get(var_name, .params);
+      control <- get(var_name, .params)
+      typed_value <- .uiToRValueMapper(control$r_class)(var_value)
       if(!is.null(control$callbacks[e$type])) {
         lapply(control$callbacks[[e$type]], function(fun) {
           ui.log.debug(deparse(fun))
-          fun(var_name, var_value, e)
+          fun(var_name, typed_value, e)
         })
       }
     }
