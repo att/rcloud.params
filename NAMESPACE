@@ -3,6 +3,7 @@
 S3method(print,rcloud.params.control)
 S3method(print,rcloud.params.param.set)
 export(checkboxParam)
+export(choiceParam)
 export(dateParam)
 export(numericParam)
 export(numericSliderParam)

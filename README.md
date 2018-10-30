@@ -239,4 +239,32 @@ dateParam('dateValueFromHtmltools', value = '2017-08-30', label = "Date value", 
 div(id="dateValueFromHtmltools-result")) 
 ```
 
+## Radio Buttons
 
+```{r}
+paramDiv(h1('Radio button input'))
+
+choiceVar <- 2
+
+paramDiv(
+h3("Choice with default value from variable"),
+choiceParam('choiceVar', label = "Select value", choices = list('1' = "first", '2' = "second", '3' = "third"), 
+    callbacks = list('change' = function(var_name, var_value, ...) { rcw.set('#choiceVar-result', var_value) })),
+div(id="choiceVar-result")
+)
+
+paramDiv(
+h3("Choice with no variable"),
+choiceParam('choiceNoVar', label = "Select value", choices = list('1' = "first", '2' = "second", '3' = "third"), 
+    callbacks = list('change' = function(var_name, var_value, ...) { 
+    rcw.set('#choiceNoVar-result', var_value) })),
+div(id="choiceNoVar-result")
+)
+
+paramDiv(
+h3("Select with default value specified using htmltools tag"),
+choiceParam('choiceValueFromHtmltools', value = 3, label = "Select value", choices = list('1' = "first", '2' = "second", '3' = "third"), 
+    callbacks = list('change' = function(var_name, var_value, ...) { 
+    rcw.set('#choiceValueFromHtmltools-result', var_value) })),
+div(id="choiceValueFromHtmltools-result"))
+```

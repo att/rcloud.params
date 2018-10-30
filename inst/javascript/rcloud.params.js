@@ -38,7 +38,7 @@
     var _varmap = {}, _varClass = {}, _defaults = {}, _backend, _disabled_callbacks = [];
     
     function get_input_value(control) { // takes jquery object and extracts value
-         if(control.find('button').length > 0) {
+         if (control.find('button').length > 0) {
            return undefined;
          }
          if (control.find('select').length > 0) {
@@ -48,8 +48,15 @@
             return _.map(selectedOpts, (op) => { 
                 return $(op).val();
             });
-          } else if(control.find('input[type="checkbox"]').length > 0) {
+          } else if (control.find('input[type="checkbox"]').length > 0) {
             return control.find('input[type="checkbox"]').is(':checked');	
+          } else if (control.find('input[type="radio"]').length > 0) {
+            let selectedOpts = _.filter($(control).find('input[type="radio"]'), (op) => { 
+              return $(op).is(':checked') && !$(op).is(':disabled');
+            });
+            return _.map(selectedOpts, (op) => { 
+                return $(op).val();
+            });
           } else {
             return control.find('input').val().trim();
           }

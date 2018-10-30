@@ -189,6 +189,32 @@ selectParam <-
   }
 
 #'
+#' Creates radio buttons group input control
+#'
+#' @export
+#'
+choiceParam <-
+  function(name,
+           label = NULL,
+           choices = list(),
+           group = 'default',
+           ...) {
+    .paramFactory(
+      name,
+      label,
+      'character',
+      group,
+      tagFactory = function(...) {
+        res <- tag('div', list(...))
+        res$attribs[.rcloudParamsAttr('radio-group-name')] = name
+        res
+      },
+      rToTagValueMapper = .rToUIControlValueMapper('radio', choices),
+      ...
+    )
+  }
+
+#'
 #' Creates checkbox input control
 #'
 #' @export

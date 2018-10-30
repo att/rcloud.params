@@ -107,10 +107,6 @@
   input_tag$attribs[.rcloudParamsAttr('default-value')] <- paste(default_value, collapse = ",");
   input_tag$attribs[.rcloudParamsAttr('value')] <- paste(param_value, collapse=",");
   
-  if (is.null(input_tag$attribs$class)) {
-    input_tag$attribs$class <- 'form-control'
-  }
-  
   labelMsg <- label
   
   ui.log.debug("Parameter - ", paste0("Name: ", name, ", Default: ", paste(default_value, collapse = ","), ", Current: ", paste(param_value, collapse=","), ", Class: ", r_class))
@@ -126,6 +122,11 @@
     control_tag <- paramDiv(id = control_id,
                             'class' = 'form-group', div(class='checkbox', label_tag, input_tag));
   } else {
+    if (input_tag$name != 'div') {
+      if (is.null(input_tag$attribs$class)) {
+        input_tag$attribs$class <- 'form-control'
+      }
+    }
     label_tag <- tags$label(labelMsg, 
                             id = label_id,
                             'class' = 'control-label',
@@ -289,6 +290,31 @@
            } else {
              tag$attribs$checked <- NULL
            }
+           tag
+         },
+         'radio' = function(tag, value) {
+           options <- NULL
+           if (is.null(names(localChoices))) {
+             options <- list(lapply(localChoices, function(c) {
+               typedChoice <- as.character(c)
+               res <- tags$input(type='radio', name = tag$attribs[.rcloudParamsAttr('radio-group-name')])
+               if (typedChoice %in% value)
+                 res$attribs$checked = NA
+               div(class="radio", tags$label(typedChoice, res))
+             }))
+           } else {
+             options <- list(lapply(names(localChoices), function(c) {
+               res <- tags$input(type='radio', name = tag$attribs[.rcloudParamsAttr('radio-group-name')], value=c)
+               if (c %in% value)
+                 res$attribs$checked = NA
+               div(class="radio", tags$label(localChoices[[c]], res))
+             })
+             )
+           }
+           
+           tag$children <- options
+           tag$attribs$choices <- NULL
+           tag$attribs$value <- NULL
            tag
          },
          function(tag, value) {
