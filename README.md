@@ -51,7 +51,7 @@ submit(function() { plot(c(x:y))})
 ```
 
 
-# Examples
+# Reactive Controls Examples
 
 ## Text Input
 ```{r}
