@@ -325,7 +325,7 @@
 
 .getValueFromTagAttribute <- function(inputTag) {
   tagValue <- NULL
-  if('value' %in% names(inputTag$attribs)) {
+  if ('value' %in% names(inputTag$attribs)) {
     if (!is.null(inputTag$attribs$value) && !any(is.na(inputTag$attribs$value))) {
       tagValue <- inputTag$attribs$value
     }
@@ -336,7 +336,7 @@
 .processCallbackFunctions <- function(callbacksParam = list()) {
   callbacks <- list()
   for (callback in names(callbacksParam)) {
-    if (!is.list(callbacksParam[callback])) {
+    if (!is.list(callbacksParam[[callback]])) {
       callbacks[callback] <- list(callbacksParam[callback])
     } else {
       callbacks[callback] <- callbacksParam[callback]
@@ -346,10 +346,10 @@
 }
 
 .prependCallbackFunction <- function(callbacks = list(), eventType = 'change', FUN) {
-  if(is.null(eventType) || is.null(FUN)) {
+  if (is.null(eventType) || is.null(FUN)) {
     callbacks
   } else {
-    if(eventType %in% names(callbacks)) {
+    if (eventType %in% names(callbacks)) {
       callbacks[[eventType]] <- append(list(FUN), callbacks[[eventType]])
     } else {
       callbacks[[eventType]] <- list(FUN)

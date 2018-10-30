@@ -268,3 +268,21 @@ choiceParam('choiceValueFromHtmltools', value = 3, label = "Select value", choic
     rcw.set('#choiceValueFromHtmltools-result', var_value) })),
 div(id="choiceValueFromHtmltools-result"))
 ```
+
+## Action Buttons
+
+```{r}
+paramDiv(h1('Action buttons'))
+
+paramDiv(
+h3("Execute two actions on click"),
+buttonParam(value = "Execute",
+    callbacks = list('click' = list(
+        function(var_name, var_value, ...) { rcw.set('#action-result', var_name) }, 
+        function(var_name, var_value, ...) { rcw.set('#action-result2', c(1:10)) }))
+        
+        ),
+div(id="action-result"),
+div(id="action-result2")
+)
+```

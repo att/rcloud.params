@@ -58,6 +58,49 @@ submitParam <-
   }
 
 #'
+#' Create action button
+#' 
+#' @export
+buttonParam <-
+  function(name = paste0("button_", as.integer(runif(1) * 1e6)),
+           value = 'Button',
+           label = '',
+           group = 'default',
+           ...) {
+    params_in <- list(...)
+    
+    ui.log.debug("Extra params: ", params_in)
+    
+    callbacks <- list()
+    
+    if ('callbacks' %in% names(params_in)) {
+      callbacks <- .processCallbackFunctions(params_in[['callbacks']])
+    }
+    
+    params_in['callbacks'] <- NULL
+    
+    inputTag <-
+      tags$button(value,
+                  id = name,
+                  type = 'button',
+                  class = "btn btn-default", 
+                  params_in)
+    
+    control_descriptor <-
+      .createControl(label,
+                     name,
+                     group,
+                     FALSE,
+                     FALSE,
+                     'logical',
+                     inputTag,
+                     callbacks)
+    .registerControl(control_descriptor)
+    return(control_descriptor$control_tag)
+  }
+
+
+#'
 #' Creates date-picker input control
 #'
 #' @export

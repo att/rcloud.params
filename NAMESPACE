@@ -2,6 +2,7 @@
 
 S3method(print,rcloud.params.control)
 S3method(print,rcloud.params.param.set)
+export(buttonParam)
 export(checkboxParam)
 export(choiceParam)
 export(dateParam)

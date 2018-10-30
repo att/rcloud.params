@@ -87,7 +87,7 @@
     
     function invokeBackend(group, name, val, e) {
       if(_disabled_callbacks.indexOf(group) < 0) {
-          _backend.handle_event(name, val, e);
+          _backend.handle_event(name, val, { type: e.type });
       }
     }
     
@@ -145,12 +145,15 @@
                       result.set_query(name, val, el.data('rcloud-params-rclass'));
                       invokeBackend(group, name, val, e);
                   });
-                } else if(el.is('button')) {
-                    el.on('click', function (e) {
-                        let val = get_input_value(el);
-                        let name = el.data('rcloud-params-name');
-                        let group = el.data('rcloud-params-group');
-                        invokeBackend(group, name, val, e);
+                } else if(el.find('button[type="button"]').length > 0) {
+                    _.forEach(el.find('button[type="button"]'), (b) => {
+                      let $b = $(b);
+                      $b.on('click', function (e) {
+                          let val = true;
+                          let name = el.data('rcloud-params-name');
+                          let group = el.data('rcloud-params-group');
+                          invokeBackend(group, name, val, e);
+                      });
                     });
                 }
           };
