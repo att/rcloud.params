@@ -15,6 +15,7 @@
 #' @param qsValueExtractor a function that extracts value from a query string
 #' @param nullValueProvider a function that returns a value that should be used if default, query string nor shiny.tag specify a value
 #' @param rToTagValueMapper a mapper that converts R value to a value accepted by shiny.tag
+#' @param uiToRValueMapper a mapper that converts UI value to an R value
 #' @param ... parameters passed to shiny.tag, if 'callbacks' list is among them, it is removed before it is passed to tagFactory
 #' @return shiny.tag representing the produced parameter control
 #'
@@ -31,7 +32,8 @@
                               value
                             }
                           }, 
-                          rToTagValueMapper = .rToUIControlDefaultValueMapper(), 
+                          rToTagValueMapper = .rToUIControlDefaultValueMapper(),
+                          uiToRValueMapper = .uiToRValueMapper(r_class),
                           ...) {
   
   params_in <- list(...)
@@ -55,7 +57,7 @@
   
   tagValue <- tagValueExtractor(inputTag)
   
-  qsValue <- qsValueExtractor(name, r_class)
+  qsValue <- qsValueExtractor(name, uiToRValueMapper)
   
   value <- .selectValue(qsValue, tagValue, defaultValue)
   
@@ -65,9 +67,16 @@
     assign(name, value, envir=globalenv())
   }
   
-  inputTag <- rToTagValueMapper(inputTag, value)
+  ui.log.debug("Parameter - ", paste0("Name: ", name, 
+                                      ", Default: ", paste(defaultValue, collapse = ","), 
+                                      ", Default type: ", typeof(defaultValue), 
+                                      ", Current: ", paste(value, collapse=","), 
+                                      ", Current type: ", typeof(value), 
+                                      ", Class: ", r_class))
   
-  control_descriptor <- .createControl(label, name, group, defaultValue, value, r_class, inputTag, callbacks)
+  inputTag <- rToTagValueMapper(inputTag, defaultValue, value)
+  
+  control_descriptor <- .createControl(label, name, group, uiToRValueMapper, inputTag, callbacks)
   
   .registerControl(control_descriptor)
   
@@ -84,15 +93,13 @@
 #' @param label the label to be displayed in the UI
 #' @param name the name of the variable
 #' @param group the control group
-#' @param default_value the default value of the variable (one specified by the associated variable)
-#' @param param_value the value of the parameter resulting from runtime state: query string, variable value and shiny.tag parameter
-#' @param r_class class of the variable
+#' @param uiToRValueMapper function mapping UI values to R
 #' @param input_tag shiny.tag to be used for the input
 #' @param user_callbacks the list of callbacks specified by the user
 #' 
 #' @return rcloud.params.control structure
 #'
-.createControl <- function(label, name, group = 'default', default_value, param_value, r_class, input_tag, user_callbacks = list()) {
+.createControl <- function(label, name, group = 'default', uiToRValueMapper, input_tag, user_callbacks = list()) {
   label_id <- .controlLabelId(name)
   input_id <- .controlInputId(name)
   control_id <- .controlId(name)
@@ -103,12 +110,8 @@
   input_tag$attribs[varNameAttr] <- name; 
   input_tag$attribs[.rcloudHtmlwidgetsInlineAttr()] <- TRUE;
   input_tag$attribs[.rcloudParamsAttr('group')] <- group;
-  input_tag$attribs[.rcloudParamsAttr('default-value')] <- paste(default_value, collapse = ",");
-  input_tag$attribs[.rcloudParamsAttr('value')] <- paste(param_value, collapse=",");
   
   labelMsg <- label
-  
-  ui.log.debug("Parameter - ", paste0("Name: ", name, ", Default: ", paste(default_value, collapse = ","), ", Current: ", paste(param_value, collapse=","), ", Class: ", r_class))
   
   if('type' %in% names(input_tag$attribs) && input_tag$attribs$type == 'checkbox') {
     # just checkbox is a special case...
@@ -150,7 +153,7 @@
   structure(list(id = control_id,
                  name = name,
                  callbacks = callbacks, 
-                 r_class = r_class, 
+                 uiToRValueMapper = uiToRValueMapper, 
                  control_tag = control_tag),
             class="rcloud.params.control")
   
@@ -199,22 +202,20 @@
   val
 }
 
-.getMultiValueFromQueryParameter <- function(name, r_class) {
+.getMultiValueFromQueryParameter <- function(name, valueMapper) {
   qsValue <- input.QS[[name]]
   value <- NULL
   if (!is.null(qsValue[1])) {
-    valueMapper <- .uiToRValueMapper(r_class)
     parser <- .qsMultiValueParser()
     value <- valueMapper(parser(qsValue))
   }
   value
 }
 
-.getSingleValueFromQueryParameter <- function(name, r_class) {
+.getSingleValueFromQueryParameter <- function(name, valueMapper) {
   qsValue <- input.QS[[name]]
   value <- NULL
   if (!is.null(qsValue[1])) {
-    valueMapper <- .uiToRValueMapper(r_class)
     parser <- .qsSingleValueParser()
     value <- valueMapper(parser(qsValue))
   }
@@ -241,36 +242,83 @@
 .uiToRValueMapper <- function(r_class) {
   switch(r_class, 
          'character' = as.character,
-         'Date' = as.Date,
-         'numeric' = as.numeric,
-         'logical' = as.logical,
+         'Date' = function(val) {
+           if(val != '') {
+             tryCatch(as.Date(val), error = function(e) {
+               NULL
+             })
+           } else {
+             NULL
+           }
+         },
+         'numeric' = function(val) {
+           if(val != '') {
+             tryCatch(as.numeric(val), error = function(e) {
+               NULL
+             })
+           } else {
+             NULL
+           }
+         }, 
+         'logical' = function(val) {
+           if(val != '') {
+             tryCatch(as.logical(val), error = function(e) {
+               NULL
+             })
+           } else {
+             NULL
+           }
+         }, 
          as.character)
 }
 
+.toCharacterSafe <- function(val) {
+  if(!is.null(val) && !is.character(val)) {
+    as.character(val)
+  } else if(is.character(val)) {
+    val
+  } else {
+    ''
+  }
+  
+}
+
 .rToUIControlDefaultValueMapper <- function() {
-  function(tag, value) {
-    tag$attribs$value <- as.character(value)
+
+  function(tag, defaultValue, value) {
+    if (!is.null(value)) {
+      tag$attribs$value <- .toCharacterSafe(value)
+    }
+    if (!is.null(defaultValue)) {
+      tag$attribs[.rcloudParamsAttr('default-value')] <- .toCharacterSafe(defaultValue)
+    }
     tag
   }
 }
 
 .rToUIControlSelectValueMapper <- function(choices = NULL) {
   localChoices <- choices
-  function(tag, value) {
+  function(tag, defaultValue, value) {
     options <- NULL
     if (is.null(names(localChoices))) {
       options <- list(lapply(localChoices, function(c) {
         res <- tags$option(c)
         typedChoice <- as.character(c)
         if (typedChoice %in% value)
-          res$attribs$selected = NA
+          res$attribs$selected <- NA
+        if(typedChoice %in% defaultValue) {
+          res$attribs[.rcloudParamsAttr('default-value')] <- 'true';
+        }
         res
       }))
     } else {
       options <- list(lapply(names(localChoices), function(c) {
         res <- tags$option(localChoices[[c]], value=c)
         if (c %in% value)
-          res$attribs$selected = NA
+          res$attribs$selected <- NA
+        if(c %in% defaultValue) {
+          res$attribs[.rcloudParamsAttr('default-value')] <- 'true';
+        }
         res
       })
       )
@@ -291,12 +339,18 @@
 }
 
 .rToUIControlCheckboxValueMapper <- function() {
-  function(tag, value) {
+  function(tag, defaultValue, value) {
            tag$attribs$value <- NULL
            if (value) {
              tag$attribs$checked <- value
            } else {
              tag$attribs$checked <- NULL
+           }
+           
+           if(is.null(defaultValue) || !defaultValue) {
+             tag$attribs[.rcloudParamsAttr('default-value')] <- 'false';
+           } else {
+             tag$attribs[.rcloudParamsAttr('default-value')] <- 'true';
            }
            tag
          }
@@ -304,21 +358,27 @@
 
 .rToUIControlRadioValueMapper <- function(choices = NULL) {
   localChoices <- choices
-  function(tag, value) {
+  function(tag, defaultValue, value) {
     options <- NULL
     if (is.null(names(localChoices))) {
       options <- list(lapply(localChoices, function(c) {
         typedChoice <- as.character(c)
         res <- tags$input(type='radio', name = tag$attribs[.rcloudParamsAttr('radio-group-name')])
         if (typedChoice %in% value)
-          res$attribs$checked = NA
+          res$attribs$checked <- NA
+        if(typedChoice %in% defaultValue) {
+          res$attribs[.rcloudParamsAttr('default-value')] <- 'true';
+        }
         div(class="radio", tags$label(typedChoice, res))
       }))
     } else {
       options <- list(lapply(names(localChoices), function(c) {
         res <- tags$input(type='radio', name = tag$attribs[.rcloudParamsAttr('radio-group-name')], value=c)
         if (c %in% value)
-          res$attribs$checked = NA
+          res$attribs$checked <- NA
+        if(c %in% defaultValue) {
+          res$attribs[.rcloudParamsAttr('default-value')] <- 'true';
+        }
         div(class="radio", tags$label(localChoices[[c]], res))
       })
       )

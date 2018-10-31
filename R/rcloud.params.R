@@ -48,8 +48,6 @@ submitParam <-
       .createControl(label,
                      name,
                      group,
-                     FALSE,
-                     FALSE,
                      'logical',
                      inputTag,
                      callbacks)
@@ -90,8 +88,6 @@ buttonParam <-
       .createControl(label,
                      name,
                      group,
-                     FALSE,
-                     FALSE,
                      'logical',
                      inputTag,
                      callbacks)

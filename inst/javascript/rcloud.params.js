@@ -54,11 +54,52 @@
             let selectedOpts = _.filter($(control).find('input[type="radio"]'), (op) => { 
               return $(op).is(':checked') && !$(op).is(':disabled');
             });
+            let values = _.map(selectedOpts, (op) => { 
+                return $(op).val();
+            });
+            if (values.length > 0) {
+              return values[0];
+            } 
+            return undefined;
+          } else {
+            return control.find('input').val().trim();
+          }
+    }
+    
+    function get_default_input_value(control) { // takes jquery object and extracts value
+         if (control.find('button').length > 0) {
+           return undefined;
+         }
+         if (control.find('select').length > 0) {
+            let selectedOpts = _.filter($(control).find('option'), (op) => { 
+              return $(op).is('[data-rcloud-params-default-value="true"]') && !$(op).is(':disabled');
+            });
             return _.map(selectedOpts, (op) => { 
                 return $(op).val();
             });
+          } else if (control.find('input[type="checkbox"]').length > 0) {
+            return control.find('input[type="checkbox"]').is('[data-rcloud-params-default-value="true"]');	
+          } else if (control.find('input[type="radio"]').length > 0) {
+            let selectedOpts = _.filter($(control).find('input[type="radio"]'), (op) => { 
+              return $(op).is('[data-rcloud-params-default-value="true"]') && !$(op).is(':disabled');
+            });
+            let values = _.map(selectedOpts, (op) => { 
+                return $(op).val();
+            });
+            if (values.length > 0) {
+              return values[0];
+            } 
+            return undefined;
           } else {
-            return control.find('input').val().trim();
+            let defaultValue = control.find('input').data('rcloud-params-default-value');
+            if (defaultValue !== null && defaultValue !== undefined) {
+              if (typeof(defaultValue) === 'string') {
+               return defaultValue.trim();
+              } else {
+                return defaultValue;
+              }
+            }
+            return undefined;
           }
     }
     
@@ -137,8 +178,8 @@
                   let input = el.find('select, input');
                   
                   let inputValue = get_input_value(el);
-                  let defaultValue = input.data('rcloud-params-default-value');
-                  let name = input.data('rcloud-params-name');
+                  let defaultValue = get_default_input_value(el);
+                  let name = el.data('rcloud-params-name');
                   
                   set_query(name, inputValue, defaultValue);
                   
@@ -149,8 +190,8 @@
                   el.on('change', function (e) {
                       let val = get_input_value(el);
                       let input = el.find('select, input');
-                      let defaultValue = input.data('rcloud-params-default-value');
-                      let name = input.data('rcloud-params-name');
+                      let defaultValue = get_default_input_value(el);
+                      let name = el.data('rcloud-params-name');
                       let group = input.data('rcloud-params-group');
       
                       if (val === '') val = undefined;
@@ -275,7 +316,7 @@
                     let invalidControls = el.find('.has-error');
     
                     if (invalidControls.length === 0) {
-                        el.find('submit').attr('disabled', 'disabled');
+                        el.find('button[type="submit"]').attr('disabled', 'disabled');
                         let controls = $('input[data-rcloud-params-group="'+ group + '"], select[data-rcloud-params-group="'+ group + '"]');
                         let values = _.map(controls, (inputTag) => {
                           let $inputTag = $(inputTag);
