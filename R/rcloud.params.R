@@ -226,7 +226,7 @@ selectParam <-
           value
         }
       },
-      rToTagValueMapper = .rToUIControlValueMapper('select', choices),
+      rToTagValueMapper = .rToUIControlSelectValueMapper(choices),
       ...
     )
   }
@@ -252,7 +252,7 @@ choiceParam <-
         res$attribs[.rcloudParamsAttr('radio-group-name')] = name
         res
       },
-      rToTagValueMapper = .rToUIControlValueMapper('radio', choices),
+      rToTagValueMapper = .rToUIControlRadioValueMapper(choices),
       ...
     )
   }
@@ -296,7 +296,7 @@ checkboxParam <-
           value
         }
       },
-      rToTagValueMapper = .rToUIControlValueMapper('checkbox'),
+      rToTagValueMapper = .rToUIControlCheckboxValueMapper(),
       ...
     )
   }

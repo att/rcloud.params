@@ -35,7 +35,7 @@
         };
     })();
 
-    var _varmap = {}, _varClass = {}, _defaults = {}, _backend, _disabled_callbacks = [];
+    var _varmap = {}, _backend, _disabled_callbacks = [];
     
     function get_input_value(control) { // takes jquery object and extracts value
          if (control.find('button').length > 0) {
@@ -103,6 +103,15 @@
     }
     
     
+    function set_query(key, value, defaultValue) {
+      if (value !== undefined && value !== null && value !== '' && value != defaultValue) {
+          _varmap[key] = value;
+      } else {
+          delete _varmap[key];
+      }
+      querystring.update(_varmap);
+    }
+    
     var result = {
         init: function (ocaps, k) {
           
@@ -114,11 +123,6 @@
                 let el = $(n);
                 
                 if(!el.is('form') && el.find('button').length === 0) {
-                  let inputValue = get_input_value(el);
-                  let name = el.data('rcloud-params-name');
-                  let varClass = el.data('rcloud-params-rclass');
-                  
-                  result.set_query(name, inputValue, varClass);
                   
                   let requiredValidationRule = (control) => {
                         if (!isValueProvided(control)) {
@@ -132,17 +136,25 @@
                 
                   let input = el.find('select, input');
                   
+                  let inputValue = get_input_value(el);
+                  let defaultValue = input.data('rcloud-params-default-value');
+                  let name = input.data('rcloud-params-name');
+                  
+                  set_query(name, inputValue, defaultValue);
+                  
                   input.on('change', function(e) {
                       requiredValidationRule(el);
                   });
                   
                   el.on('change', function (e) {
                       let val = get_input_value(el);
-                      let name = el.data('rcloud-params-name');
-                      let group = el.data('rcloud-params-group');
+                      let input = el.find('select, input');
+                      let defaultValue = input.data('rcloud-params-default-value');
+                      let name = input.data('rcloud-params-name');
+                      let group = input.data('rcloud-params-group');
       
                       if (val === '') val = undefined;
-                      result.set_query(name, val, el.data('rcloud-params-rclass'));
+                      set_query(name, val, defaultValue);
                       invokeBackend(group, name, val, e);
                   });
                 } else if(el.find('button[type="button"]').length > 0) {
@@ -173,19 +185,6 @@
           
           _varmap = querystring.parse();
           k(null, _varmap);
-        },
-        set_query: function (key, value, varClass, k) {
-            if (value !== undefined && value !== null && value !== '') {
-                _varmap[key] = value;
-                _varClass[key] = varClass;
-            } else {
-                delete _varmap[key];
-            }
-            querystring.update(_.pick(_varmap, _.filter(Object.keys(_varmap), (k) => { 
-              return _defaults[k] !== _varmap[k]; 
-            })));
-            if (k)
-                k(null, 1);
         },
         // copied over from rcloud.web - need to be moved back to caps.R       
         appendDiv: function (context_id, div, content, k) {

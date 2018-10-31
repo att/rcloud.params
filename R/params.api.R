@@ -31,7 +31,7 @@
                               value
                             }
                           }, 
-                          rToTagValueMapper = .rToUIControlValueMapper('input'), 
+                          rToTagValueMapper = .rToUIControlDefaultValueMapper(), 
                           ...) {
   
   params_in <- list(...)
@@ -103,7 +103,6 @@
   input_tag$attribs[varNameAttr] <- name; 
   input_tag$attribs[.rcloudHtmlwidgetsInlineAttr()] <- TRUE;
   input_tag$attribs[.rcloudParamsAttr('group')] <- group;
-  input_tag$attribs[.rcloudParamsAttr('rclass')] <- r_class;
   input_tag$attribs[.rcloudParamsAttr('default-value')] <- paste(default_value, collapse = ",");
   input_tag$attribs[.rcloudParamsAttr('value')] <- paste(param_value, collapse=",");
   
@@ -248,42 +247,51 @@
          as.character)
 }
 
-.rToUIControlValueMapper <- function(control_type, choices = NULL) {
+.rToUIControlDefaultValueMapper <- function() {
+  function(tag, value) {
+    tag$attribs$value <- as.character(value)
+    tag
+  }
+}
+
+.rToUIControlSelectValueMapper <- function(choices = NULL) {
   localChoices <- choices
-  switch(control_type, 
-         'select' = function(tag, value) {
-           options <- NULL
-           if (is.null(names(localChoices))) {
-             options <- list(lapply(localChoices, function(c) {
-               res <- tags$option(c)
-               typedChoice <- as.character(c)
-               if (typedChoice %in% value)
-                 res$attribs$selected = NA
-               res
-             }))
-           } else {
-             options <- list(lapply(names(localChoices), function(c) {
-               res <- tags$option(localChoices[[c]], value=c)
-               if (c %in% value)
-                 res$attribs$selected = NA
-               res
-             })
-             )
-           }
-           
-           if (length(value) == 0) {
-             if(!'multiple' %in% names(tag$attribs)) {
-               # Add default disabled option to reflect lack of selection
-               options <- c(list(tags$option('-- select --', 'hidden' = NA, 'disabled' = NA, 'selected' = NA, 'value' = NA)), options)
-             }
-           }
-           
-           tag$children <- options
-           tag$attribs$choices <- NULL
-           tag$attribs$value <- NULL
-           tag
-         },
-         'checkbox' = function(tag, value) {
+  function(tag, value) {
+    options <- NULL
+    if (is.null(names(localChoices))) {
+      options <- list(lapply(localChoices, function(c) {
+        res <- tags$option(c)
+        typedChoice <- as.character(c)
+        if (typedChoice %in% value)
+          res$attribs$selected = NA
+        res
+      }))
+    } else {
+      options <- list(lapply(names(localChoices), function(c) {
+        res <- tags$option(localChoices[[c]], value=c)
+        if (c %in% value)
+          res$attribs$selected = NA
+        res
+      })
+      )
+    }
+    
+    if (length(value) == 0) {
+      if(!'multiple' %in% names(tag$attribs)) {
+        # Add default disabled option to reflect lack of selection
+        options <- c(list(tags$option('-- select --', 'hidden' = NA, 'disabled' = NA, 'selected' = NA, 'value' = NA)), options)
+      }
+    }
+    
+    tag$children <- options
+    tag$attribs$choices <- NULL
+    tag$attribs$value <- NULL
+    tag
+  }
+}
+
+.rToUIControlCheckboxValueMapper <- function() {
+  function(tag, value) {
            tag$attribs$value <- NULL
            if (value) {
              tag$attribs$checked <- value
@@ -291,36 +299,36 @@
              tag$attribs$checked <- NULL
            }
            tag
-         },
-         'radio' = function(tag, value) {
-           options <- NULL
-           if (is.null(names(localChoices))) {
-             options <- list(lapply(localChoices, function(c) {
-               typedChoice <- as.character(c)
-               res <- tags$input(type='radio', name = tag$attribs[.rcloudParamsAttr('radio-group-name')])
-               if (typedChoice %in% value)
-                 res$attribs$checked = NA
-               div(class="radio", tags$label(typedChoice, res))
-             }))
-           } else {
-             options <- list(lapply(names(localChoices), function(c) {
-               res <- tags$input(type='radio', name = tag$attribs[.rcloudParamsAttr('radio-group-name')], value=c)
-               if (c %in% value)
-                 res$attribs$checked = NA
-               div(class="radio", tags$label(localChoices[[c]], res))
-             })
-             )
-           }
-           
-           tag$children <- options
-           tag$attribs$choices <- NULL
-           tag$attribs$value <- NULL
-           tag
-         },
-         function(tag, value) {
-           tag$attribs$value <- as.character(value)
-           tag
-         })
+         }
+}
+
+.rToUIControlRadioValueMapper <- function(choices = NULL) {
+  localChoices <- choices
+  function(tag, value) {
+    options <- NULL
+    if (is.null(names(localChoices))) {
+      options <- list(lapply(localChoices, function(c) {
+        typedChoice <- as.character(c)
+        res <- tags$input(type='radio', name = tag$attribs[.rcloudParamsAttr('radio-group-name')])
+        if (typedChoice %in% value)
+          res$attribs$checked = NA
+        div(class="radio", tags$label(typedChoice, res))
+      }))
+    } else {
+      options <- list(lapply(names(localChoices), function(c) {
+        res <- tags$input(type='radio', name = tag$attribs[.rcloudParamsAttr('radio-group-name')], value=c)
+        if (c %in% value)
+          res$attribs$checked = NA
+        div(class="radio", tags$label(localChoices[[c]], res))
+      })
+      )
+    }
+    
+    tag$children <- options
+    tag$attribs$choices <- NULL
+    tag$attribs$value <- NULL
+    tag
+  }
 }
 
 .getValueFromTagAttribute <- function(inputTag) {
