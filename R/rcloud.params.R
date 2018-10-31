@@ -48,7 +48,7 @@ submitParam <-
       .createControl(label,
                      name,
                      group,
-                     'logical',
+                     .uiToRValueMapper('logical'),
                      inputTag,
                      callbacks)
     
@@ -88,7 +88,7 @@ buttonParam <-
       .createControl(label,
                      name,
                      group,
-                     'logical',
+                     .uiToRValueMapper('logical'),
                      inputTag,
                      callbacks)
     .registerControl(control_descriptor)
