@@ -1,4 +1,15 @@
-#' Produces a div with additional attribute ('data-rcloud-htmlwidgets-inline') 
+#' Display shiny tag without extra iframe
+#' 
+#' @return given shiny tag decorated with rcloud-htmlwidgets attribute
+#' 
+#' @export
+
+compact <- function(tag) {
+  tag$attribs[.rcloudHtmlwidgetsCompactAttr()] <- TRUE
+  tag
+}
+
+#' Produces a div with additional attribute ('data-rcloud-htmlwidgets-compact') 
 #' 
 #' The resulting div will not be wrapped by iframe by rcloud.htmlwidgets.
 #' 
@@ -8,7 +19,7 @@
 #' @export
 paramDiv <- function(...) {
   divTag <- div(...)
-  divTag$attribs[.rcloudHtmlwidgetsInlineAttr()] <- TRUE
+  divTag <- compact(divTag)
   return(divTag)
 }
 
@@ -58,7 +69,7 @@ paramSet <- function(..., callbacks = list(), wait_for = FALSE, name = paste0("f
   }
   
   content = tags$form(name = name, in_params)
-  content$attribs[.rcloudHtmlwidgetsInlineAttr()] <- TRUE
+  content$attribs[.rcloudHtmlwidgetsCompactAttr()] <- TRUE
   content$attribs[.rcloudParamsAttrNamespace()] <- TRUE
   content$attribs[.rcloudParamsAttr('group')] <- group;
   

@@ -108,7 +108,7 @@
   varNameAttr <- .rcloudParamsAttr('name')
   
   input_tag$attribs[varNameAttr] <- name; 
-  input_tag$attribs[.rcloudHtmlwidgetsInlineAttr()] <- TRUE;
+  input_tag$attribs[.rcloudHtmlwidgetsCompactAttr()] <- TRUE;
   input_tag$attribs[.rcloudParamsAttr('group')] <- group;
   
   labelMsg <- label
@@ -174,8 +174,8 @@
   'data-rcloud-params'
 }
 
-.rcloudHtmlwidgetsInlineAttr <- function() {
-  'data-rcloud-htmlwidgets-inline'
+.rcloudHtmlwidgetsCompactAttr <- function() {
+  'data-rcloud-htmlwidgets-compact'
 }
 
 .rcloudParamsAttr <- function(name) {
