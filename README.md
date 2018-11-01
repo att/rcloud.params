@@ -25,35 +25,6 @@ Functions controlling the execution of notebook cells.
 * `rcloud.run.cells.from` - runs cells starting from the given cell
 * `rcloud.stop.execution` - gracefully (by allowing current cell execution to complete) stops execution of notebook cells 
 
-# Blocking Form Example
-
-```{r}
-z <- 10
-text_param = "Default text"
-paramSet(div(
-    numericParam('z', min = -19, label = "Z value"),
-    selectParam('choice1', 'Select value', 
-        choices = list('1' = "first", '2' = "second")), 
-    selectParam('choice2', 'Select value', multiple='multiple', 
-        choices = list('1' = "first", '2' = "second")),
-    numericSliderParam('the_range', min = 1, max = 100, label = "Select value"),
-    checkboxParam('chck1', 'Yes?'),
-    dateParam('my_date', 'Date'),
-    textParam('text_param', label = "Text value"),
-    submitParam(name='submit1')
-    ), wait_for = TRUE
-)
-
-z
-choice1
-choice2
-the_range
-chck1
-my_date
-text_param
-```
-
-> Note, in case of a blocking form, any registered reactive callback functions on specific controls are disabled.
 
 # Reactive Controls Examples
 
@@ -290,3 +261,35 @@ div(id="action-result"),
 div(id="action-result2")
 )
 ```
+
+# Blocking Form Example
+
+The following code will display a parameters form and block the execution until values for all parameters are provided.
+
+```{r}
+z <- 10
+text_param = "Default text"
+paramSet(div(
+    numericParam('z', min = -19, label = "Z value"),
+    selectParam('choice1', 'Select value', 
+        choices = list('1' = "first", '2' = "second")), 
+    selectParam('choice2', 'Select value', multiple='multiple', 
+        choices = list('1' = "first", '2' = "second")),
+    numericSliderParam('the_range', min = 1, max = 100, label = "Select value"),
+    checkboxParam('chck1', 'Yes?'),
+    dateParam('my_date', 'Date'),
+    textParam('text_param', label = "Text value"),
+    submitParam(name='submit1')
+    ), wait_for = TRUE
+)
+
+z
+choice1
+choice2
+the_range
+chck1
+my_date
+text_param
+```
+
+> Note, in case of a blocking form, any registered reactive callback functions on specific controls are disabled.
