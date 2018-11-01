@@ -8,3 +8,4 @@ Depends: rcloud.support, htmltools
 NOTE: --- packages that are not on CRAN/RForge.net *must* be in Suggests! ---
 License: MIT
 RoxygenNote: 6.1.0
+Encoding: UTF-8

@@ -239,19 +239,6 @@
             });
             k(true);
         },
-        appendElement: function (context_id, div, content, k) {
-            executeInCellResultProcessingLoop(context_id, function(result_div) {
-            let el = get_control_element(content);
-            if(el) {
-              if (div) {
-                $(div).append(el);
-              } else {
-                result_div.append(el);
-              }
-            }
-            });
-            k(true);
-        },
         prependDiv: function (context_id, div, content, k) {
             executeInCellResultProcessingLoop(context_id, function(result_div) {
               if (_.isFunction(content)) content = content();
@@ -259,19 +246,6 @@
                 $(div).prepend(content);
               } else {
                 result_div.prepend(content);
-              }
-            });
-            k(true);
-        },
-        prependElement: function (context_id, div, content, k) {
-            executeInCellResultProcessingLoop(context_id, function(result_div) {
-              let el = get_control_element(content);
-              if(el) {
-                if (div) {
-                  $(div).prepend(el);
-                } else {
-                  result_div.prepend(el);
-                }
               }
             });
             k(true);
@@ -290,22 +264,6 @@
             k(true);
         },
         
-        setElement: function (context_id, div, content, k) {
-            executeInCellResultProcessingLoop(context_id, function(result_div) {
-              let el = get_control_element(content);
-              if(el) {
-                if (div) {
-                  $(div).empty();
-                  $(div).append(el);
-                } else {
-                  result_div.empty();
-                  result_div.append(el);
-                }
-              }
-            });
-            k(true);
-        },
-
         wait_for_group: function (context_id, group, k) {
             disableCallbacksForGroup(group);
             executeInCellResultProcessingLoop(context_id, function(result_div) {
@@ -343,6 +301,56 @@
               }
               
           });
+        },
+        
+        run_cell: function(cell_id, k) {
+          let matching_cells = _.filter(shell.notebook.model.cells, (c) => { 
+            return c.id() == cell_id; 
+          });
+          if (matching_cells.length > 0) {
+            shell.run_notebook_cells([cell_id]);
+          } else {
+            console.error("Cell with id " + cell_id + " not found!");
+          }
+          k();
+        },
+        
+        run_cells: function(cell_ids, k) {
+          try {
+            let matching_cells = _.filter(shell.notebook.model.cells, (c) => { 
+              return cell_ids.indexOf(c.id()) >= 0; 
+            });
+            if (matching_cells.length > 0) {
+              shell.run_notebook_cells(cell_ids);
+            } else {
+              console.error("Cells with ids " + cell_ids + " not found!");
+            }
+          } finally {
+            k();
+          }
+        },
+        
+        run_cells_from: function(cell_id, k) {
+          try {
+            let matching_cells = _.filter(shell.notebook.model.cells, (c) => { 
+              return c.id() == cell_id; 
+            });
+            if (matching_cells.length > 0) {
+                shell.run_notebook_from(cell_id);
+            } else {
+              console.error("Cell with id " + cell_id + " not found!");
+            }
+          } finally {
+            k();
+          }
+        },
+        
+        stop_execution: function(k) {
+          try {
+            RCloud.UI.processing_queue.stopGracefully()
+          } finally {
+            k();
+          }
         },
         
         log: function(content, k) {

@@ -1,22 +1,4 @@
-#' Create div that will include parms widgets
-#' @description  Allows users to enter param widgets with html tools all in one call
-#' @param byRow alter widget display (T/F)
-#' @examples 
-#'    div(h1("Start"),h1("Start"),
-#'        mytags$input(v, val = 2, type = "number"),
-#'        mytags$input(z, type = "date"),
-#'        h1("End"))
-#'    submit()
-#' @export
-
-##  This function uses the rcw.* functions from rcloud.web. 
-## These functions have been copied to rcloud.params.js but will need to be updated 
-## when the package is transfered.
-
-
-#' 
-#' 
-#' Produced a div with additional attribute ('data-rcloud-htmlwidgets-inline') 
+#' Produces a div with additional attribute ('data-rcloud-htmlwidgets-inline') 
 #' 
 #' The resulting div will not be wrapped by iframe by rcloud.htmlwidgets.
 #' 

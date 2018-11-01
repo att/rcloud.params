@@ -1,8 +1,10 @@
-input.caps <- NULL
+frontend <- NULL
 input.QS <- NULL
 
-.params <- new.env();
+.params <- new.env()
+.options <- new.env()
 
+DEBUG_OPTION <- 'DEBUG'
 
 .onLoad <- function(libname, pkgname)
 {
@@ -12,20 +14,20 @@ input.QS <- NULL
                                      paste(readLines(path), collapse='\n')) 
     caps
   }
-  input.caps <<- f("rcloud.params", "rcloud.params.js") 
+  frontend <<- f("rcloud.params", "rcloud.params.js") 
   
-  if(!is.null(input.caps)) {
+  if(!is.null(frontend)) {
     ocaps <- list(
       handle_event = rcloud.support:::make.oc(dispatchEvent));
     
     # init calls js queryString which grabs url and splits. init also has update method 
-    input.QS <<- input.caps$init(ocaps)  # $notebook in list with notebook id string
-    
+    input.QS <<- frontend$init(ocaps)  # $notebook in list with notebook id string
   }
   
+  assign(DEBUG_OPTION, .isDebugEnabledInRCloudConfig(), envir = .options)
 }
 
-.isDebugEnabled <- function() {
+.isDebugEnabledInRCloudConfig <- function() {
   OPT <- "rcloud.params.debug.enabled"
   if(rcloud.support:::nzConf(OPT)) {
     return(as.logical(rcloud.support:::getConf(OPT)))
@@ -33,33 +35,7 @@ input.QS <- NULL
   return(FALSE)
 }
 
-dispatchEvent <- function(var_name, var_value, e) {
-  ui.log.debug("Event received", var_name, var_value, paste0(as.character(e), collapse = ""))
-  ui.log.debug("Event type", e$type)
-  if(!is.null(var_name)) {
-    if(var_name %in% names(.params)) {
-      control <- get(var_name, .params)
-      typed_value <- control$uiToRValueMapper(var_value)
-      if(!is.null(control$callbacks[e$type])) {
-        lapply(control$callbacks[[e$type]], function(fun) {
-          ui.log.debug(deparse(fun))
-          fun(var_name, typed_value, e)
-        })
-      }
-    }
-  }
-  invisible(TRUE)
+.isDebugEnabled <- function() {
+  return(get(DEBUG_OPTION, envir = .options))
 }
 
-ui.log.info <- function(...) {
-  rcloud.params.ui.log.info(paste(..., collapse = ""));
-}
-
-ui.log.debug <- function(...) {
-  if(.isDebugEnabled()) {
-    rcloud.params.ui.log.debug(paste(..., collapse = ""));
-  }
-}
-
-rcloud.params.ui.log.info <- function(content) input.caps$log(content)
-rcloud.params.ui.log.debug <- function(content) input.caps$debug(content)

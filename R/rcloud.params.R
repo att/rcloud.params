@@ -1,12 +1,4 @@
 
-#'
-#'  Blocks execution and waits for submission of a form associated with the given group
-#' 
-#' @export
-waitForGroup <- function(group = 'default') {
-  input.caps$wait_for_group(Rserve.context(), group)
-}
-
 #' @export
 print.rcloud.params.control <-
   function(x, ..., view = interactive()) {
