@@ -35,12 +35,9 @@ print.rcloud.params.param.set <- function(x, ..., view = interactive()) {
     
     if(!is.null(controlValues)) {
       lapply(controlValues, function(el) {
-        r_class <- if(is.null(el$r_class)) {
-          'character'
-        } else {
-          el$r_class
-        }
-        assign(el$name, .uiToRValueMapper(r_class)(el$value))
+        control <- get(el$name, .params)
+        typed_value <- control$uiToRValueMapper(el$value)
+        assign(el$name, typed_value, envir=globalenv())
       });
     }
   }

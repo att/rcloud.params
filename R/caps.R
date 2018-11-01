@@ -84,7 +84,7 @@ waitForGroup <- function(group = 'default') {
   frontend$wait_for_group(Rserve.context(), group)
 }
 
-#' Gracefully stops execution of a notebook
+#' Gracefully stops execution of a notebook by allowing current cell to complete
 #' 
 #' @export
 rcloud.stop.execution <- function() {
