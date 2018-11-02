@@ -14,7 +14,7 @@
   uiToRValueMapper = .uiToRValueMapper(r_class), ...)
 }
 \arguments{
-\item{name}{the name of the variable}
+\item{name}{the variable name}
 
 \item{label}{the label for the control}
 
