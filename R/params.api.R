@@ -6,7 +6,7 @@
 #' 
 #' The returned value is a shiny.tag structure, the associated rcloud.params.control is persisted in the packages environment and is used to invoke control-specific callback functions.
 #' 
-#' @param name the name of the variable
+#' @param name the variable name
 #' @param label the label for the control
 #' @param r_class type of the variable
 #' @param group the group the control belongs to

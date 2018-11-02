@@ -279,7 +279,6 @@
                         let values = _.map(controls, (inputTag) => {
                           let $inputTag = $(inputTag);
                           return {
-                            r_class: $inputTag.data('rcloud-params-rclass'),
                             name: $inputTag.data('rcloud-params-name'),
                             value: get_input_value($inputTag.parent())
                           };
