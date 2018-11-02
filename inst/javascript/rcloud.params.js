@@ -126,18 +126,21 @@
       return true;
     }
     
-    function invokeBackend(group, name, val, e) {
-      if(_disabled_callbacks.indexOf(group) < 0) {
-          _backend.handle_event(name, val, { type: e.type });
+    function invokeBackend(el, name, val, e) {
+      let form = el.closest('form');
+      if(form.length > 0) {
+        if(_disabled_callbacks.indexOf(form.get(0).id) < 0) {
+            _backend.handle_event(name, val, { type: e.type });
+        }
       }
     }
     
-    function disableCallbacksForGroup(group) {
-      _disabled_callbacks.push(group);
+    function disableCallbacksForForm(form_id) {
+      _disabled_callbacks.push(form_id);
     }
     
-    function enableCallbacksForGroup(group) {
-      let index = _disabled_callbacks.indexOf(group);
+    function enableCallbacksForForm(form_id) {
+      let index = _disabled_callbacks.indexOf(form_id);
       if(index >= 0) {
         _disabled_callbacks.splice(index, 1);
       }
@@ -192,11 +195,10 @@
                       let input = el.find('select, input');
                       let defaultValue = get_default_input_value(el);
                       let name = el.data('rcloud-params-name');
-                      let group = input.data('rcloud-params-group');
       
                       if (val === '') val = undefined;
                       set_query(name, val, defaultValue);
-                      invokeBackend(group, name, val, e);
+                      invokeBackend(el, name, val, e);
                   });
                 } else if(el.find('button[type="button"]').length > 0) {
                     _.forEach(el.find('button[type="button"]'), (b) => {
@@ -204,8 +206,7 @@
                       $b.on('click', function (e) {
                           let val = true;
                           let name = el.data('rcloud-params-name');
-                          let group = el.data('rcloud-params-group');
-                          invokeBackend(group, name, val, e);
+                          invokeBackend(el, name, val, e);
                       });
                     });
                 }
@@ -264,18 +265,18 @@
             k(true);
         },
         
-        wait_for_group: function (context_id, group, k) {
-            disableCallbacksForGroup(group);
+        wait_for_form: function (context_id, form_id, k) {
+            disableCallbacksForForm(form_id);
             executeInCellResultProcessingLoop(context_id, function(result_div) {
-              let el = $('form[data-rcloud-params-group="'+ group + '"]');
-              if(el.length > 0) {
-                el.submit(function (e) {
+              let form = $('form[name="'+ form_id + '"]');
+              if(form.length > 0) {
+                form.submit(function (e) {
                   try {
-                    let invalidControls = el.find('.has-error');
+                    let invalidControls = form.find('.has-error');
     
                     if (invalidControls.length === 0) {
-                        el.find('button[type="submit"]').attr('disabled', 'disabled');
-                        let controls = $('input[data-rcloud-params-group="'+ group + '"], select[data-rcloud-params-group="'+ group + '"]');
+                        form.find('button[type="submit"]').attr('disabled', 'disabled');
+                        let controls = form.find('input, select');
                         let values = _.map(controls, (inputTag) => {
                           let $inputTag = $(inputTag);
                           return {
@@ -284,7 +285,7 @@
                           };
                         });
                         k(null, values);
-                        enableCallbacksForGroup(group);
+                        enableCallbacksForForm(form_id);
                     } else {
                         $(invalidControls[0]).focus();
                     }
@@ -292,7 +293,7 @@
                   } catch (err) {
                     console.error(err);
                     k(err, null);
-                    enableCallbacksForGroup(group);
+                    enableCallbacksForForm(form_id);
                   } finally {
                     return false; // Never submit the form, it would refresh the edit screen
                   }

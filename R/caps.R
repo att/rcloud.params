@@ -77,11 +77,10 @@ rcloud.run.cells.from <- function(cell_id) {
 #'
 #'  Blocks execution and waits for submission of a form associated with the given group
 #' 
-#' TODO Consider removing this
 #' 
 #' @export
-waitForGroup <- function(group = 'default') {
-  frontend$wait_for_group(Rserve.context(), group)
+waitForForm <- function(form_id) {
+  frontend$wait_for_form(Rserve.context(), form_id)
 }
 
 #' Gracefully stops execution of a notebook by allowing current cell to complete

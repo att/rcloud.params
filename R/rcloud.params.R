@@ -93,7 +93,7 @@ print.rcloud.params.param.set <- function(x, ..., view = interactive()) {
   print(x$content)
   
   if(x$wait_for) {
-    controlValues <- waitForGroup()
+    controlValues <- waitForForm(x$name)
     
     if(!is.null(controlValues)) {
       lapply(controlValues, function(el) {
@@ -138,13 +138,12 @@ paramDiv <- function(...) {
 #' @param ... child elements (shiny.tags)
 #' @param callbacks form callbacks
 #' @param wait_for should the R process be blocked when form is displayed
-#' @param name name of the form
-#' @param group the group of the controls
+#' @param name of the form
 #' 
 #' @return rcloud.params.param.set structure 
 #' 
 #' @export 
-paramSet <- function(..., callbacks = list(), wait_for = FALSE, name = paste0("form_", as.integer(runif(1)*1e6)), group = 'default') {
+paramSet <- function(..., callbacks = list(), wait_for = FALSE, name = paste0("form_", as.integer(runif(1)*1e6))) {
   
   in_params <- list(...)
   
@@ -155,7 +154,6 @@ paramSet <- function(..., callbacks = list(), wait_for = FALSE, name = paste0("f
   content = tags$form(name = name, in_params)
   content$attribs[.rcloudHtmlwidgetsCompactAttr()] <- TRUE
   content$attribs[.rcloudParamsAttrNamespace()] <- TRUE
-  content$attribs[.rcloudParamsAttr('group')] <- group;
   
   param_set_descriptor <- structure(list(name = name, content = content, callbacks = callbacks, wait_for = wait_for), class="rcloud.params.param.set")
   
@@ -172,7 +170,6 @@ submitParam <-
   function(name = paste0("submit_", as.integer(runif(1) * 1e6)),
            value = 'Submit',
            label = '',
-           group = 'default',
            ...) {
     params_in <- list(...)
     
@@ -196,7 +193,6 @@ submitParam <-
     control_descriptor <-
       .createControl(label,
                      name,
-                     group,
                      .uiToRValueMapper('logical'),
                      inputTag,
                      callbacks)
@@ -212,7 +208,6 @@ buttonParam <-
   function(name = paste0("button_", as.integer(runif(1) * 1e6)),
            value = 'Button',
            label = '',
-           group = 'default',
            ...) {
     params_in <- list(...)
     
@@ -236,7 +231,6 @@ buttonParam <-
     control_descriptor <-
       .createControl(label,
                      name,
-                     group,
                      .uiToRValueMapper('logical'),
                      inputTag,
                      callbacks)
@@ -249,14 +243,12 @@ buttonParam <-
 #'
 .dateParam <- function(name,
                       label = NULL,
-                      group = 'default',
                       ...) {
   
   .paramFactory(
     name,
     label,
     'Date',
-    group,
     tagFactory = function(...) {
       inputTag <- tag('input', c(list(type = 'date'), list(...)))
     },
@@ -270,13 +262,11 @@ buttonParam <-
 #' 
 .textParam <- function(name,
                       label = NULL,
-                      group = 'default',
                       ...) {
   .paramFactory(
     name,
     label,
     'character',
-    group,
     tagFactory = function(...) {
       inputTag <- tag('input', c(list(type = 'text'), list(...)))
     },
@@ -292,13 +282,11 @@ buttonParam <-
            label = NULL,
            min = NA,
            max = NA,
-           group = 'default',
            ...) {
     .numericParam(name,
                  label,
                  min,
                  max,
-                 group,
                  type = 'range',
                  class = 'form-control slider',
                  ...)
@@ -311,13 +299,11 @@ buttonParam <-
            label = NULL,
            min = NA,
            max = NA,
-           group = 'default',
            ...) {
     .paramFactory(
       name,
       label,
       'numeric',
-      group,
       tagFactory = function(...) {
         params_in <- list(...)
         type <- 'number'
@@ -342,13 +328,11 @@ buttonParam <-
   function(name,
            label = NULL,
            choices = list(),
-           group = 'default',
            ...) {
     .paramFactory(
       name,
       label,
       'character',
-      group,
       tagFactory = function(...) {
         tag('select', list(...))
       },
@@ -373,13 +357,11 @@ buttonParam <-
   function(name,
            label = NULL,
            choices = list(),
-           group = 'default',
            ...) {
     .paramFactory(
       name,
       label,
       'character',
-      group,
       tagFactory = function(...) {
         res <- tag('div', list(...))
         res$attribs[.rcloudParamsAttr('radio-group-name')] = name
@@ -396,13 +378,11 @@ buttonParam <-
 .checkboxParam <-
   function(name,
            label = NULL,
-           group = 'default',
            ...) {
     .paramFactory(
       name,
       label,
       'logical',
-      group,
       tagFactory = function(...) {
         tags$input(type = 'checkbox', class = "checkbox", ...)
       },

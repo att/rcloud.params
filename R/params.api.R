@@ -9,7 +9,6 @@
 #' @param name the variable name
 #' @param label the label for the control
 #' @param r_class type of the variable
-#' @param group the group the control belongs to
 #' @param tagFactory the function returning form input shiny.tags
 #' @param tagValueExtractor a function that extracts value specified via shiny.tag attributes
 #' @param qsValueExtractor a function that extracts value from a query string
@@ -19,7 +18,7 @@
 #' @param ... parameters passed to shiny.tag, if 'callbacks' list is among them, it is removed before it is passed to tagFactory
 #' @return shiny.tag representing the produced parameter control
 #'
-.paramFactory <- function(name, label, r_class, group = 'default', 
+.paramFactory <- function(name, label, r_class,
                           tagFactory = function(...) {
                             do.call('tag', ...)
                           }, 
@@ -76,7 +75,7 @@
   
   inputTag <- rToTagValueMapper(inputTag, defaultValue, value)
   
-  control_descriptor <- .createControl(label, name, group, uiToRValueMapper, inputTag, callbacks)
+  control_descriptor <- .createControl(label, name, uiToRValueMapper, inputTag, callbacks)
   
   .registerControl(control_descriptor)
   
@@ -92,14 +91,13 @@
 #' 
 #' @param label the label to be displayed in the UI
 #' @param name the name of the variable
-#' @param group the control group
 #' @param uiToRValueMapper function mapping UI values to R
 #' @param input_tag shiny.tag to be used for the input
 #' @param user_callbacks the list of callbacks specified by the user
 #' 
 #' @return rcloud.params.control structure
 #'
-.createControl <- function(label, name, group = 'default', uiToRValueMapper, input_tag, user_callbacks = list()) {
+.createControl <- function(label, name, uiToRValueMapper, input_tag, user_callbacks = list()) {
   label_id <- .controlLabelId(name)
   input_id <- .controlInputId(name)
   control_id <- .controlId(name)
@@ -108,8 +106,7 @@
   varNameAttr <- .rcloudParamsAttr('name')
   
   input_tag$attribs[varNameAttr] <- name; 
-  input_tag$attribs[.rcloudHtmlwidgetsCompactAttr()] <- TRUE;
-  input_tag$attribs[.rcloudParamsAttr('group')] <- group;
+  input_tag$attribs[.rcloudHtmlwidgetsCompactAttr()] <- TRUE
   
   labelMsg <- label
   
