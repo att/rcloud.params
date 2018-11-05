@@ -380,12 +380,12 @@ z <- 10
 text_param = "Default text"
 synchronousParamSet(div(
     numericParam(z, min = -19, label = "Z value"),
-    selectParam(choice1, 'Select value', 
+    selectParam(select, 'Select value', 
         choices = list('1' = "first", '2' = "second")), 
-    selectParam(choice2, 'Select value', multiple='multiple', 
+    choiceParam(choice, 'Select value', multiple='multiple', 
         choices = list('1' = "first", '2' = "second")),
     numericSliderParam(the_range, min = 1, max = 100, label = "Select value"),
-    checkboxParam(chck1, 'Yes?'),
+    checkboxParam(chck, 'Yes?'),
     dateParam(my_date, 'Date'),
     textParam(text_param, label = "Text value"),
     submitParam(name='submit1')
@@ -395,10 +395,10 @@ synchronousParamSet(div(
 )
 
 z
-choice1
-choice2
+select
+choice
 the_range
-chck1
+chck
 my_date
 text_param
 

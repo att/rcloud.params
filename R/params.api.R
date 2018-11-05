@@ -48,6 +48,14 @@
   
   params_in$callbacks <- NULL
   
+  if(!'required' %in% names(params_in)) {
+    params_in$required <- NA
+  } else {
+    if (is.logical(params_in$required) && !params_in$required) {
+      params_in$required <- NULL
+    }
+  }
+  
   
   ui.log.debug("Params for tag factory: ", params_in)
   inputTag <- do.call('tagFactory', params_in)
@@ -105,7 +113,7 @@
   
   varNameAttr <- .rcloudParamsAttr('name')
   
-  input_tag$attribs[varNameAttr] <- name; 
+  input_tag$attribs[varNameAttr] <- name
   input_tag$attribs[.rcloudHtmlwidgetsCompactAttr()] <- TRUE
   
   labelMsg <- label
@@ -357,6 +365,11 @@
   localChoices <- choices
   function(tag, defaultValue, value) {
     options <- NULL
+    required <- if('required' %in% names(tag$attribs)) {
+      TRUE
+    } else {
+      FALSE
+    }
     if (is.null(names(localChoices))) {
       options <- list(lapply(localChoices, function(c) {
         typedChoice <- as.character(c)
@@ -365,6 +378,9 @@
           res$attribs$checked <- NA
         if(typedChoice %in% defaultValue) {
           res$attribs[.rcloudParamsAttr('default-value')] <- 'true';
+        }
+        if(required) {
+          res$attribs$required <- NA
         }
         div(class="radio", tags$label(typedChoice, res))
       }))
@@ -376,6 +392,9 @@
         if(c %in% defaultValue) {
           res$attribs[.rcloudParamsAttr('default-value')] <- 'true';
         }
+        if(required) {
+          res$attribs$required <- NA
+        }
         div(class="radio", tags$label(localChoices[[c]], res))
       })
       )
@@ -384,6 +403,7 @@
     tag$children <- options
     tag$attribs$choices <- NULL
     tag$attribs$value <- NULL
+    tag$attribs$required <- NULL
     tag
   }
 }

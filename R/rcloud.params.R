@@ -103,14 +103,18 @@ print.rcloud.params.param.set <- function(x, ..., view = interactive()) {
       waitForForm(x$name)
     } else {
       controlValues <- waitForSynchronousForm(x$name)
-      
-      if(!is.null(controlValues)) {
+      ui.log.debug("Result", controlValues)
+      if (!is.null(controlValues)) {
+        
         lapply(controlValues, function(el) {
-          control <- get(el$name, .params)
-          typed_value <- control$uiToRValueMapper(el$value)
-          assign(el$name, typed_value, envir=globalenv())
-        });
-        if(!is.null(x$on_submit) && is.function(x$on_submit)) {
+          if (exists(el$name, .params)) {
+            control <- get(el$name, .params)
+            typed_value <- control$uiToRValueMapper(el$value)
+            assign(el$name, typed_value, envir=globalenv())
+          }
+        })
+        
+        if (!is.null(x$on_submit) && is.function(x$on_submit)) {
           x$on_submit(x$name, controlValues)
         }
       }
@@ -164,7 +168,7 @@ paramSet <- function(...,
                      }, 
                      name = paste0("form_", as.integer(runif(1)*1e6)), 
                      wait_if_invalid = TRUE, 
-                     hide_source = TRUE) {
+                     hide_source = FALSE) {
   
   in_params <- list(...)
   
@@ -218,7 +222,7 @@ synchronousParamSet <- function(...,
                                 on_submit = function(form_name, values, ...) {},
                                 name = paste0("form_", as.integer(runif(1)*1e6)), 
                                 wait_if_invalid = TRUE, 
-                                hide_source = TRUE) {
+                                hide_source = FALSE) {
   
   in_params <- list(...)
   

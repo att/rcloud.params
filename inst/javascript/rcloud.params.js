@@ -151,7 +151,10 @@
     
     
     function validateControl(control) {
-      if (!isValueProvided(control)) {
+      
+      let required = _.all(control.find('select, input'), (c) => { return $(c).is(':required');});
+      
+      if (required && !isValueProvided(control)) {
         control.addClass('has-error');
       } else {
         control.removeClass('has-error');
@@ -181,12 +184,12 @@
           try {
               let invalidControls = form.find('.has-error');
               if (invalidControls.length === 0) {
-                  let controls = form.find('input, select');
-                  let values = _.map(controls, (inputTag) => {
-                  let $inputTag = $(inputTag);
+                  let controls = _.filter(form.find('div[data-rcloud-params="TRUE"]'), (c) => { return $(c).find('button').length === 0; });
+                  let values = _.map(controls, (control) => {
+                  let $control = $(control);
                       return {
-                        name: $inputTag.data('rcloud-params-name'),
-                        value: getInputValue($inputTag.parent())
+                        name: $control.data('rcloud-params-name'),
+                        value: getInputValue($control)
                       };
                   });
                   if(callback) {
