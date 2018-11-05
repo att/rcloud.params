@@ -57,37 +57,58 @@ rcloud.ui.plot <- function(selector, plot_fun, width = 300, height = 300) {
 #' 
 #' @export
 rcloud.run.cell <- function(cell_id) {
-  frontend$run_cell(cell_id)
+  frontend$runCell(cell_id)
 }
 
 #' Run cells with given ids
 #' 
 #' @export
 rcloud.run.cells <- function(cell_ids) {
-  frontend$run_cells(cell_ids)
+  frontend$runCells(cell_ids)
 }
 
 #' Run all cells starting from the given cell id
 #' 
 #' @export
 rcloud.run.cells.from <- function(cell_id) {
-  frontend$run_cells_from(cell_id)
+  frontend$runCellsFrom(cell_id)
 }
 
+
+#' Hide cell source
+#' 
+#' @export
+rcloud.hide.source.cell <- function(cell_id) {
+  frontend$hideCellSource(cell_id)
+}
+
+#' Hide currently executed cell's source
+#' 
+#' @export
+rcloud.hide.source.current.cell <- function() {
+  frontend$hideCurrentCellSource(Rserve.context())
+}
+
+#' @export
+waitForForm <- function(form_id) {
+  # Always stop the execution of next cells, and pass control to reactive UI.
+  rcloud.stop.execution()
+  frontend$waitForReactiveForm(Rserve.context(), form_id)
+}
 #'
 #'  Blocks execution and waits for submission of a form associated with the given group
 #' 
 #' 
 #' @export
-waitForForm <- function(form_id) {
-  frontend$wait_for_form(Rserve.context(), form_id)
+waitForSynchronousForm <- function(form_id) {
+  frontend$waitForForm(Rserve.context(), form_id)
 }
 
 #' Gracefully stops execution of a notebook by allowing current cell to complete
 #' 
 #' @export
 rcloud.stop.execution <- function() {
-  frontend$stop_execution()
+  frontend$stopExecution()
 }
 
 #' Enable debug messages

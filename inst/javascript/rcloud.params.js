@@ -37,7 +37,7 @@
 
     var _varmap = {}, _backend, _disabled_callbacks = [];
     
-    function get_input_value(control) { // takes jquery object and extracts value
+    function getInputValue(control) { // takes jquery object and extracts value
          if (control.find('button').length > 0) {
            return undefined;
          }
@@ -66,7 +66,7 @@
           }
     }
     
-    function get_default_input_value(control) { // takes jquery object and extracts value
+    function getDefaultInputValue(control) { // takes jquery object and extracts value
          if (control.find('button').length > 0) {
            return undefined;
          }
@@ -102,15 +102,6 @@
             return undefined;
           }
     }
-    
-    function get_control_element(content) {
-      if (_.isFunction(content)) {
-        let id = content();
-        return $('#' + id);
-      } else {
-        return $('#' + content);
-      }
-    }
     // Schedules execution of a function within cell result processing loop to ensure that any UI element referenes used in the function
     // were added to the result pane.
     function executeInCellResultProcessingLoop(context_id, fun) {
@@ -118,7 +109,7 @@
     }
     
     function isValueProvided(control) {
-      let val = get_input_value(control);
+      let val = getInputValue(control);
       if (val === null || val === undefined || val === '' || val.length === 0) val = undefined;
       if(val === undefined) {
         return false;
@@ -127,11 +118,13 @@
     }
     
     function invokeBackend(el, name, val, e) {
-      let form = el.closest('form');
+      let form = (!el.is('form')) ? el.closest('form'): el;
       if(form.length > 0) {
         if(_disabled_callbacks.indexOf(form.get(0).id) < 0) {
             _backend.handle_event(name, val, { type: e.type });
         }
+      } else {
+        _backend.handle_event(name, val, { type: e.type });
       }
     }
     
@@ -147,13 +140,71 @@
     }
     
     
-    function set_query(key, value, defaultValue) {
+    function setUrlQuery(key, value, defaultValue) {
       if (value !== undefined && value !== null && value !== '' && value != defaultValue) {
           _varmap[key] = value;
       } else {
           delete _varmap[key];
       }
       querystring.update(_varmap);
+    }
+    
+    
+    function validateControl(control) {
+      if (!isValueProvided(control)) {
+        control.addClass('has-error');
+      } else {
+        control.removeClass('has-error');
+      }
+    }
+    
+    function validateForm(form) {
+      _.forEach(form.find('[data-rcloud-params="TRUE"]'), (el) => {
+            let control = $(el);
+            if(control.find('button').length === 0) {
+                validateControl(control);
+            }
+      });
+    }
+    
+    function isSubmitEventBound(form) {
+      let events = jQuery._data( form.get(0), "events" );
+      var data = (events)? events.submit : undefined;
+       if (data === undefined || data.length === 0) {
+        return false;
+      }
+      return true;
+    }
+    
+    function onFormSubmit(form, callback, onError) {
+        return function(e) {
+          try {
+              let invalidControls = form.find('.has-error');
+              if (invalidControls.length === 0) {
+                  let controls = form.find('input, select');
+                  let values = _.map(controls, (inputTag) => {
+                  let $inputTag = $(inputTag);
+                      return {
+                        name: $inputTag.data('rcloud-params-name'),
+                        value: getInputValue($inputTag.parent())
+                      };
+                  });
+                  if(callback) {
+                    callback(form, values);
+                  }
+                } else {
+                  $(invalidControls[0]).focus();
+                }
+  
+            } catch (err) {
+                console.error(err);
+                if(onError) {
+                  onError(form, err);
+                }
+            } finally {
+                return false; // Never submit the form, it would refresh the edit screen
+            }
+        };
     }
     
     var result = {
@@ -167,37 +218,29 @@
                 let el = $(n);
                 
                 if(!el.is('form') && el.find('button').length === 0) {
-                  
-                  let requiredValidationRule = (control) => {
-                        if (!isValueProvided(control)) {
-                          control.addClass('has-error');
-                        } else {
-                          control.removeClass('has-error');
-                        }
-                  };
                 
-                  requiredValidationRule(el);
+                  validateControl(el);
                 
                   let input = el.find('select, input');
                   
-                  let inputValue = get_input_value(el);
-                  let defaultValue = get_default_input_value(el);
+                  let inputValue = getInputValue(el);
+                  let defaultValue = getDefaultInputValue(el);
                   let name = el.data('rcloud-params-name');
                   
-                  set_query(name, inputValue, defaultValue);
+                  setUrlQuery(name, inputValue, defaultValue);
                   
                   input.on('change', function(e) {
-                      requiredValidationRule(el);
+                      validateControl(el);
                   });
                   
                   el.on('change', function (e) {
-                      let val = get_input_value(el);
+                      let val = getInputValue(el);
                       let input = el.find('select, input');
-                      let defaultValue = get_default_input_value(el);
+                      let defaultValue = getDefaultInputValue(el);
                       let name = el.data('rcloud-params-name');
       
                       if (val === '') val = undefined;
-                      set_query(name, val, defaultValue);
+                      setUrlQuery(name, val, defaultValue);
                       invokeBackend(el, name, val, e);
                   });
                 } else if(el.find('button[type="button"]').length > 0) {
@@ -209,6 +252,13 @@
                           invokeBackend(el, name, val, e);
                       });
                     });
+                } else if(el.is('form')) {
+                  if(!isSubmitEventBound(el)) {
+                    el.submit(onFormSubmit(el, 
+                        function(el, values) {
+                            invokeBackend(el, el.get(0).name, values, {type : 'submit' } );
+                        }));
+                  }
                 }
           };
 
@@ -265,57 +315,112 @@
             k(true);
         },
         
-        wait_for_form: function (context_id, form_id, k) {
+        waitForReactiveForm:  function (context_id, form_id, k) {
+            try {
+                
+                executeInCellResultProcessingLoop(context_id, function(result_div) {
+                  let form = $('form[name="'+ form_id + '"]');
+                  if (form.length > 0) {
+    
+                    validateForm(form);
+                    form.off('submit');
+                    form.submit(onFormSubmit(form, 
+                      function(form, values) {
+                          invokeBackend(form, form.get(0).name, values, {type : 'submit' } );
+                      }));
+                    
+                    form.submit();
+                  }
+                  
+              });
+                  } catch (err) {
+                    console.error(err);
+                  } finally {
+                    k();
+                    return true;
+                  }
+        },
+        
+        waitForForm: function (context_id, form_id, k) {
             disableCallbacksForForm(form_id);
             executeInCellResultProcessingLoop(context_id, function(result_div) {
               let form = $('form[name="'+ form_id + '"]');
               if(form.length > 0) {
-                form.submit(function (e) {
-                  try {
-                    let invalidControls = form.find('.has-error');
-    
-                    if (invalidControls.length === 0) {
-                        form.find('button[type="submit"]').attr('disabled', 'disabled');
-                        let controls = form.find('input, select');
-                        let values = _.map(controls, (inputTag) => {
-                          let $inputTag = $(inputTag);
-                          return {
-                            name: $inputTag.data('rcloud-params-name'),
-                            value: get_input_value($inputTag.parent())
-                          };
-                        });
-                        k(null, values);
-                        enableCallbacksForForm(form_id);
-                    } else {
-                        $(invalidControls[0]).focus();
-                    }
-
-                  } catch (err) {
-                    console.error(err);
+                
+                validateForm(form);
+                form.off('submit');
+                
+                form.submit(onFormSubmit(form, 
+                  function(form, values) {
+                    k(null, values);
+                    enableCallbacksForForm(form.get(0).name);
+                    form.find('button[type="submit"]').attr('disabled', 'disabled');
+                  }, 
+                  function(form, err) {
                     k(err, null);
-                    enableCallbacksForForm(form_id);
-                  } finally {
-                    return false; // Never submit the form, it would refresh the edit screen
-                  }
-                });
+                    enableCallbacksForForm(form.get(0).name);
+                    form.find('button[type="submit"]').attr('disabled', 'disabled');
+                  }));
               }
               
           });
         },
         
-        run_cell: function(cell_id, k) {
-          let matching_cells = _.filter(shell.notebook.model.cells, (c) => { 
-            return c.id() == cell_id; 
-          });
-          if (matching_cells.length > 0) {
-            shell.run_notebook_cells([cell_id]);
-          } else {
-            console.error("Cell with id " + cell_id + " not found!");
+        hideCellSource: function(cell_id, k) {
+          try {
+            let matching_cells = _.filter(shell.notebook.model.cells, (c) => { 
+              return c.id() == cell_id; 
+            });
+            if (matching_cells.length > 0) {
+              _.forEach(matching_cells, (c) => {
+                _.forEach(c.views, (v) => {
+                  if(v.hide_source) {
+                    v.hide_source(true);
+                  }
+                })
+              });
+            } else {
+              console.error("Cell with id " + cell_id + " not found!");
+            }
+          } finally {
+            k();
           }
-          k();
         },
         
-        run_cells: function(cell_ids, k) {
+        hideCurrentCellSource: function(context_id, k) {
+          try {
+            executeInCellResultProcessingLoop(context_id, function(result_div) {
+              let filename = result_div.closest('.notebook-cell').get(0).id;
+              let cell = _.filter(shell.notebook.view.model.cells, (c) => { return filename === c.filename(); });
+              if(cell.length === 0) {
+                console.error('Cell for context ${context_id} not found.');
+              } else {
+                _.forEach(cell, (c) => { _.forEach(c.views, (v) => { 
+                  if(v.hide_source) v.hide_source(true); 
+                })});
+              }
+            })
+          } finally {
+            k();
+          }
+        },
+        
+        runCell: function(cell_id, k) {
+          try {
+            let matching_cells = _.filter(shell.notebook.model.cells, (c) => { 
+              return c.id() == cell_id; 
+            });
+            if (matching_cells.length > 0) {
+              shell.run_notebook_cells([cell_id]);
+            } else {
+              console.error("Cell with id " + cell_id + " not found!");
+            }
+          } finally {
+            k();
+          }
+        },
+        
+        runCells: function(cell_ids, k) {
           try {
             let matching_cells = _.filter(shell.notebook.model.cells, (c) => { 
               return cell_ids.indexOf(c.id()) >= 0; 
@@ -330,7 +435,7 @@
           }
         },
         
-        run_cells_from: function(cell_id, k) {
+        runCellsFrom: function(cell_id, k) {
           try {
             let matching_cells = _.filter(shell.notebook.model.cells, (c) => { 
               return c.id() == cell_id; 
@@ -345,9 +450,9 @@
           }
         },
         
-        stop_execution: function(k) {
+        stopExecution: function(k) {
           try {
-            RCloud.UI.processing_queue.stopGracefully()
+            RCloud.UI.processing_queue.stopGracefully();
           } finally {
             k();
           }

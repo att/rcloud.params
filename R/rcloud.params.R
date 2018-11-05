@@ -90,18 +90,32 @@ print.rcloud.params.control <-
 #'
 #' @export
 print.rcloud.params.param.set <- function(x, ..., view = interactive()) {
+  
+  if(x$hide_source) {
+    rcloud.hide.source.current.cell()
+  }
+  
+  # print shiny.tag
   print(x$content)
   
-  if(x$wait_for) {
-    controlValues <- waitForForm(x$name)
-    
-    if(!is.null(controlValues)) {
-      lapply(controlValues, function(el) {
-        control <- get(el$name, .params)
-        typed_value <- control$uiToRValueMapper(el$value)
-        assign(el$name, typed_value, envir=globalenv())
-      });
+  if (x$wait_if_invalid) {
+    if (x$reactive) {
+      waitForForm(x$name)
+    } else {
+      controlValues <- waitForSynchronousForm(x$name)
+      
+      if(!is.null(controlValues)) {
+        lapply(controlValues, function(el) {
+          control <- get(el$name, .params)
+          typed_value <- control$uiToRValueMapper(el$value)
+          assign(el$name, typed_value, envir=globalenv())
+        });
+        if(!is.null(x$on_submit) && is.function(x$on_submit)) {
+          x$on_submit(x$name, controlValues)
+        }
+      }
     }
+    
   }
   invisible(TRUE)
 }
@@ -136,14 +150,21 @@ paramDiv <- function(...) {
 #' Note! paramSet is not a shiny.tag, this means that it may not be wrapped in htmltools shiny.tag
 #' 
 #' @param ... child elements (shiny.tags)
-#' @param callbacks form callbacks
-#' @param wait_for should the R process be blocked when form is displayed
+#' @param on_submit callback function to invoke when form is submitted
 #' @param name of the form
+#' @param wait_if_invalid should notebook execution be stopped if parameter values are invalid
+#' @param hide_source should the source of the cell displaying the form be hidden
 #' 
 #' @return rcloud.params.param.set structure 
 #' 
 #' @export 
-paramSet <- function(..., callbacks = list(), wait_for = FALSE, name = paste0("form_", as.integer(runif(1)*1e6))) {
+paramSet <- function(..., 
+                     on_submit = function(form_name, variables, ...) {
+                       
+                     }, 
+                     name = paste0("form_", as.integer(runif(1)*1e6)), 
+                     wait_if_invalid = TRUE, 
+                     hide_source = TRUE) {
   
   in_params <- list(...)
   
@@ -151,11 +172,73 @@ paramSet <- function(..., callbacks = list(), wait_for = FALSE, name = paste0("f
     stop('No parameters were provided!')
   }
   
+  in_params$callbacks <- NULL
+  in_params$on_submit <- NULL
+  
+  callbacks <- list()
+  
+  if (!is.null(on_submit)) {
+    callbacks$submit <- on_submit
+  }
+  
   content = tags$form(name = name, in_params)
   content$attribs[.rcloudHtmlwidgetsCompactAttr()] <- TRUE
   content$attribs[.rcloudParamsAttrNamespace()] <- TRUE
   
-  param_set_descriptor <- structure(list(name = name, content = content, callbacks = callbacks, wait_for = wait_for), class="rcloud.params.param.set")
+  form_callbacks <- .processCallbackFunctions(callbacks)
+  
+  param_set_descriptor <- structure(list(name = name, 
+                                         content = content, 
+                                         callbacks = form_callbacks, 
+                                         reactive = TRUE, 
+                                         wait_if_invalid = wait_if_invalid,
+                                         hide_source = hide_source,
+                                         uiToRValueMapper = function(x) { x }
+                                         ), class="rcloud.params.param.set")
+  
+  .registerControl(param_set_descriptor)
+  
+  return(param_set_descriptor)
+}
+
+#' Creates synchronous param set form
+#' 
+#' Note! paramSet is not a shiny.tag, this means that it may not be wrapped in htmltools shiny.tag
+#' 
+#' @param ... child elements (shiny.tags)
+#' @param on_submit callback function that should be invoked when form gets submitted
+#' @param name of the form
+#' @param wait_if_invalid should notebook execution be blocked if parameter values are invalid
+#' @param hide_source should the source of the cell displaying the form be hidden
+#' 
+#' @return rcloud.params.param.set structure 
+#' 
+#' @export 
+synchronousParamSet <- function(...,
+                                on_submit = function(form_name, values, ...) {},
+                                name = paste0("form_", as.integer(runif(1)*1e6)), 
+                                wait_if_invalid = TRUE, 
+                                hide_source = TRUE) {
+  
+  in_params <- list(...)
+  
+  if (length(in_params) == 0) {
+    stop('No parameters were provided!')
+  }
+  
+  in_params$on_submit <- NULL
+  
+  content = tags$form(name = name, in_params)
+  content$attribs[.rcloudHtmlwidgetsCompactAttr()] <- TRUE
+  content$attribs[.rcloudParamsAttrNamespace()] <- TRUE
+  
+  param_set_descriptor <- structure(list(name = name, 
+                                         content = content, 
+                                         on_submit = on_submit, 
+                                         reactive = FALSE, 
+                                         wait_if_invalid = wait_if_invalid,
+                                         hide_source = hide_source
+                                         ), class="rcloud.params.param.set")
   
   .registerControl(param_set_descriptor)
   

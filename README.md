@@ -299,14 +299,86 @@ div(id="action-result2")
 )
 ```
 
+
+# Reactve Form Example
+
+## Simple Example
+
+### Cell 1
+
+```{r}
+paramDiv(h1('Reactive form'))
+
+fromVar <- 10
+
+paramSet(
+numericParam(fromVar, min = 0, label = "From value"),
+numericParam(toVar, min = 0, label = "To value"),
+submitParam(),
+    on_submit = function(var_name, var_value, ...) {
+      rcloud.run.cells.from(2)  
+    }
+)
+```
+
+### Cell 2
+
+```{r}
+plot(c(fromVar:toVar)) 
+```
+
+## Wait for Form on Demand
+
+### Cell 1
+```{r}
+paramDiv(h1('Reactive form'))
+
+fromVar <- 10
+
+paramSet(wait_if_invalid=FALSE, name='my-form',
+numericParam(fromVar, min = 0, label = "From value"),
+numericParam(toVar, min = 0, label = "To value"),
+submitParam(),
+    on_submit = function(var_name, var_value, ...) {
+      my_function(fromVar, toVar)
+    }
+)
+```
+
+### Cell 2
+```{r}
+# Some content used by form callback function
+
+my_function <- function(from, to) {
+    rcloud.ui.plot('#result-div', function() { plot(c(from:to))})
+    rcloud.run.cell(4)
+}
+
+paramDiv(id='result-div') 
+```
+
+### Cell 3
+
+```{r}
+waitForForm('my-form') 
+```
+### Cell 4
+
+```{r}
+plot(c(fromVar:toVar)) 
+```
+
+
+
+
 # Blocking Form Example
 
-The following code will display a parameters form and block the execution until values for all parameters are provided.
+The following code displays  a parameters form which blocks notebook execution until values for all parameters are provided.
 
 ```{r}
 z <- 10
 text_param = "Default text"
-paramSet(div(
+synchronousParamSet(div(
     numericParam(z, min = -19, label = "Z value"),
     selectParam(choice1, 'Select value', 
         choices = list('1' = "first", '2' = "second")), 
@@ -317,7 +389,9 @@ paramSet(div(
     dateParam(my_date, 'Date'),
     textParam(text_param, label = "Text value"),
     submitParam(name='submit1')
-    ), wait_for = TRUE
+    ), on_submit = function(form_name, values, ...) {
+     print(values)   
+    }
 )
 
 z
