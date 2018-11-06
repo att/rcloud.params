@@ -201,29 +201,29 @@ div(id="multiSelectValueFromHtmltools-result"))
 ```{r}
 paramDiv(h1('Checkbox input'))
 
-checkboxVar <- TRUE
+logicalVar <- TRUE
 
 paramDiv(
 h3("Checkbox with default value from variable"),
-checkboxParam(checkboxVar, label = "Selected?", 
+logicalParam(logicalVar, label = "Selected?", 
     callbacks = list('change' = function(var_name, var_value, ...) { rcloud.ui.set('#multiSelectVar-result', var_value) })),
 div(id="multiSelectVar-result")
 )
 
 paramDiv(
 h3("Checkbox with no variable"),
-checkboxParam(checkboxNoVar, label = "Selected?",
+logicalParam(logicalNoVar, label = "Selected?",
     callbacks = list('change' = function(var_name, var_value, ...) { 
-    rcloud.ui.set('#checkboxNoVar-result', var_value) })),
-div(id="checkboxNoVar-result")
+    rcloud.ui.set('#logicalNoVar-result', var_value) })),
+div(id="logicalNoVar-result")
 )
 
 paramDiv(
 h3("Checkbox with default value specified using htmltools tag"),
-checkboxParam(checkboxValueFromHtmltools, checked = TRUE, label = "Selected?", 
+logicalParam(logicalValueFromHtmltools, checked = TRUE, label = "Selected?", 
     callbacks = list('change' = function(var_name, var_value, ...) { 
-    rcloud.ui.set('#checkboxValueFromHtmltools-result', var_value) })),
-div(id="checkboxValueFromHtmltools-result"))
+    rcloud.ui.set('#logicalValueFromHtmltools-result', var_value) })),
+div(id="logicalValueFromHtmltools-result"))
 ```
 
 ## Date Input
@@ -304,6 +304,30 @@ div(id="action-result2")
 
 ## Simple Example
 
+```{r}
+z <- 10
+text_param = "Default text"
+paramSet(div(
+    numericParam(z, min = -19, label = "Z value"),
+    selectParam(select, 'Select value', 
+        choices = list('1' = "first", '2' = "second")), 
+    choiceParam(choice, 'Select value', multiple='multiple', 
+        choices = list('1' = "first", '2' = "second")),
+    numericSliderParam(the_range, min = 1, max = 100, label = "Select value"),
+    logicalParam(chck, 'Yes?', required = FALSE),
+    dateParam(my_date, 'Date'),
+    textParam(text_param, label = "Text value"),
+    submitParam(name='submit1')
+    ), on_submit = function(form_name, values, ...) {
+     rcloud.ui.set('#result-div', values)   
+    }
+)
+
+paramDiv(id='result-div')
+```
+
+## Execute a Specific Cell
+
 ### Cell 1
 
 ```{r}
@@ -373,7 +397,9 @@ plot(c(fromVar:toVar))
 
 # Blocking Form Example
 
-The following code displays  a parameters form which blocks notebook execution until values for all parameters are provided.
+The following code displays a parameters form which blocks notebook execution until values for all parameters are provided.
+
+> Note, in case of a blocking form, any registered reactive callback functions on specific controls are disabled.
 
 ```{r}
 z <- 10
@@ -385,7 +411,7 @@ synchronousParamSet(div(
     choiceParam(choice, 'Select value', multiple='multiple', 
         choices = list('1' = "first", '2' = "second")),
     numericSliderParam(the_range, min = 1, max = 100, label = "Select value"),
-    checkboxParam(chck, 'Yes?'),
+    logicalParam(chck, 'Yes?'),
     dateParam(my_date, 'Date'),
     textParam(text_param, label = "Text value"),
     submitParam(name='submit1')
@@ -403,5 +429,3 @@ my_date
 text_param
 
 ```
-
-> Note, in case of a blocking form, any registered reactive callback functions on specific controls are disabled.

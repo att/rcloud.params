@@ -21,7 +21,7 @@ param.Date <- function(x, ...) {
 #' @export
 param.logical <- function(x, ...) {
   name <- deparse(substitute(x))
-  .checkboxParam(name, ...)
+  .logicalParam(name, ...)
 }
 
 #' @export
@@ -55,9 +55,9 @@ numericSliderParam <- function(x, ...) {
 }
 
 #' @export
-checkboxParam <- function(x, ...) {
+logicalParam <- function(x, ...) {
   name <- deparse(substitute(x))
-  .checkboxParam(name, ...)
+  .logicalParam(name, ...)
 }
 
 #' @export
@@ -462,7 +462,7 @@ buttonParam <-
 #'
 #' Creates checkbox input control
 #'
-.checkboxParam <-
+.logicalParam <-
   function(name,
            label = NULL,
            ...) {
