@@ -4,7 +4,7 @@
 \alias{.textParam}
 \title{Creates text input control}
 \usage{
-.textParam(name, label = NULL, group = "default", ...)
+.textParam(name, label = NULL, ...)
 }
 \description{
 Creates text input control

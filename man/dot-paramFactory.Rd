@@ -4,7 +4,7 @@
 \alias{.paramFactory}
 \title{Factory creating rcloud.params controls}
 \usage{
-.paramFactory(name, label, r_class, group = "default",
+.paramFactory(var, label, r_class, query = var,
   tagFactory = function(...) {     do.call("tag", ...) },
   tagValueExtractor = .getValueFromTagAttribute,
   qsValueExtractor = .getSingleValueFromQueryParameter,
@@ -14,13 +14,13 @@
   uiToRValueMapper = .uiToRValueMapper(r_class), ...)
 }
 \arguments{
-\item{name}{the variable name}
+\item{var}{the variable name}
 
 \item{label}{the label for the control}
 
 \item{r_class}{type of the variable}
 
-\item{group}{the group the control belongs to}
+\item{query}{variable parameter name}
 
 \item{tagFactory}{the function returning form input shiny.tags}
 

@@ -4,8 +4,7 @@
 \alias{.choiceParam}
 \title{Creates radio buttons group input control}
 \usage{
-.choiceParam(name, label = NULL, choices = list(), group = "default",
-  ...)
+.choiceParam(name, label = NULL, choices = list(), ...)
 }
 \description{
 Creates radio buttons group input control

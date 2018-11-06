@@ -4,8 +4,7 @@
 \alias{.numericParam}
 \title{Creates numeric input control}
 \usage{
-.numericParam(name, label = NULL, min = NA, max = NA,
-  group = "default", ...)
+.numericParam(name, label = NULL, min = NA, max = NA, ...)
 }
 \description{
 Creates numeric input control

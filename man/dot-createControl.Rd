@@ -4,21 +4,21 @@
 \alias{.createControl}
 \title{Creates rcloud.params.control structure}
 \usage{
-.createControl(label, name, group = "default", uiToRValueMapper,
-  input_tag, user_callbacks = list())
+.createControl(label, var_name, uiToRValueMapper, input_tag,
+  user_callbacks = list(), par_name = var_name)
 }
 \arguments{
 \item{label}{the label to be displayed in the UI}
 
-\item{name}{the name of the variable}
-
-\item{group}{the control group}
+\item{var_name}{the name of the variable}
 
 \item{uiToRValueMapper}{function mapping UI values to R}
 
 \item{input_tag}{shiny.tag to be used for the input}
 
 \item{user_callbacks}{the list of callbacks specified by the user}
+
+\item{par_name}{parameter name, as used by the UI}
 }
 \value{
 rcloud.params.control structure

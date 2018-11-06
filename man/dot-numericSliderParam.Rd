@@ -4,8 +4,7 @@
 \alias{.numericSliderParam}
 \title{Creates numeric slider input control}
 \usage{
-.numericSliderParam(name, label = NULL, min = NA, max = NA,
-  group = "default", ...)
+.numericSliderParam(name, label = NULL, min = NA, max = NA, ...)
 }
 \description{
 Creates numeric slider input control

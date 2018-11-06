@@ -5,7 +5,7 @@
 \title{Create action button}
 \usage{
 buttonParam(name = paste0("button_", as.integer(runif(1) * 1e+06)),
-  value = "Button", label = "", group = "default", ...)
+  value = "Button", label = "", ...)
 }
 \description{
 Create action button

@@ -4,8 +4,7 @@
 \alias{.selectParam}
 \title{Creates select input control}
 \usage{
-.selectParam(name, label = NULL, choices = list(), group = "default",
-  ...)
+.selectParam(name, label = NULL, choices = list(), ...)
 }
 \description{
 Creates select input control

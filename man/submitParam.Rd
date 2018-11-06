@@ -5,7 +5,7 @@
 \title{Create submit button}
 \usage{
 submitParam(name = paste0("submit_", as.integer(runif(1) * 1e+06)),
-  value = "Submit", label = "", group = "default", ...)
+  value = "Submit", label = "", ...)
 }
 \description{
 Create submit button

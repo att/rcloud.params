@@ -4,7 +4,7 @@
 \alias{.dateParam}
 \title{Creates date-picker input control}
 \usage{
-.dateParam(name, label = NULL, group = "default", ...)
+.dateParam(name, label = NULL, ...)
 }
 \description{
 Creates date-picker input control
