@@ -255,10 +255,24 @@
 }
 
 .uiToRValueMapper <- function(r_class) {
+  
+  isNotEmpty <- function(val) {
+    !is.null(val) && !any(is.na(val)) && val != ''
+  }
+  asCharacterMapper <- function(val) {
+    if (isNotEmpty(val)) {
+      tryCatch(as.character(val), error = function(e) {
+        NULL
+      })
+    } else {
+      NULL
+    }
+  }
+  
   switch(r_class, 
-         'character' = as.character,
+         'character' = asCharacterMapper,
          'Date' = function(val) {
-           if(val != '') {
+           if(isNotEmpty(val)) {
              tryCatch(as.Date(val), error = function(e) {
                NULL
              })
@@ -267,7 +281,7 @@
            }
          },
          'numeric' = function(val) {
-           if(val != '') {
+           if(isNotEmpty(val)) {
              tryCatch(as.numeric(val), error = function(e) {
                NULL
              })
@@ -276,7 +290,7 @@
            }
          }, 
          'logical' = function(val) {
-           if(val != '') {
+           if(isNotEmpty(val)) {
              tryCatch(as.logical(val), error = function(e) {
                NULL
              })
@@ -284,7 +298,7 @@
              NULL
            }
          }, 
-         as.character)
+         asCharacterMapper)
 }
 
 .toCharacterSafe <- function(val) {
