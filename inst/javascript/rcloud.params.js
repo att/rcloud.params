@@ -264,6 +264,10 @@
                   }
                 }
           };
+          
+          if(window.RCloudParams && RCloudParams.observer) {
+            RCloudParams.observer.disconnect();
+          }
 
           var observer = new MutationObserver(function(mutations) {
             _.forEach(mutations, (m) => { 
@@ -277,6 +281,10 @@
           });
 
           observer.observe(document, {attributes: false, childList: true, characterData: false, subtree:true});
+          
+          window.RCloudParams = {
+            observer
+          };
           
           _varmap = querystring.parse();
           k(null, _varmap);
