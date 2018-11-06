@@ -262,27 +262,19 @@ submitParam <-
     
     ui.log.debug("Extra params: ", params_in)
     
-    callbacks <- list()
-    
-    if ('callbacks' %in% names(params_in)) {
-      callbacks <- .processCallbackFunctions(params_in[['callbacks']])
-    }
-    
-    params_in['callbacks'] <- NULL
-    
     inputTag <-
       tags$button(value,
                   id = name,
                   type = 'submit',
                   params_in,
-                  class = "btn btn-default")
+                  class = "btn btn-primary")
     
     control_descriptor <-
       .createControl(label,
                      name,
                      .uiToRValueMapper('logical'),
-                     inputTag,
-                     callbacks)
+                     inputTag
+      )
     
     return(control_descriptor$control_tag)
   }
@@ -303,10 +295,19 @@ buttonParam <-
     callbacks <- list()
     
     if ('callbacks' %in% names(params_in)) {
-      callbacks <- .processCallbackFunctions(params_in[['callbacks']])
+      callbacks <- .processCallbackFunctions(params_in$callbacks)
     }
     
-    params_in['callbacks'] <- NULL
+    params_in$callbacks <- NULL
+    
+    if ('on_click' %in% names(params_in)) {
+      if (!'click' %in% names(callbacks)) {
+        callbacks$click <- list()
+      }
+      callbacks$click <- c(callbacks$click, params_in$on_click)
+      params_in$on_click <- NULL
+      
+    }
     
     inputTag <-
       tags$button(value,

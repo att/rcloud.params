@@ -42,13 +42,20 @@
   callbacks <- list()
   
   if ('callbacks' %in% names(params_in)) {
-    ui.log.debug("Has custom callbacks.")
-    callbacks <- .processCallbackFunctions(params_in[['callbacks']])
+    callbacks <- .processCallbackFunctions(params_in$callbacks)
   }
-  
   params_in$callbacks <- NULL
   
-  if(!'required' %in% names(params_in)) {
+  if ('on_change' %in% names(params_in)) {
+    if (!'change' %in% names(callbacks)) {
+      callbacks$change <- list()
+    }
+    callbacks$change <- c(callbacks$change, params_in$on_change)
+    params_in$on_change <- NULL
+  }
+  
+  
+  if (!'required' %in% names(params_in)) {
     params_in$required <- NA
   } else {
     if (is.logical(params_in$required) && !params_in$required) {
