@@ -1,17 +1,17 @@
 
 #' Dispatch event handling to appropriate control's callback function
 #' 
-dispatchEvent <- function(var_name, var_value, e) {
-  ui.log.debug("Event received", e$type, var_name, var_value, paste0(as.character(e), collapse = ""))
-  if (!is.null(var_name)) {
-    if (var_name %in% names(.params)) {
-      control <- get(var_name, .params)
+dispatchEvent <- function(par_name, var_value, e) {
+  ui.log.debug("Event received", e$type, par_name, var_value, paste0(as.character(e), collapse = ""))
+  if (!is.null(par_name)) {
+    if (par_name %in% names(.params)) {
+      control <- get(par_name, .params)
       typed_value <- control$uiToRValueMapper(var_value)
       if (!is.null(control$callbacks) && !is.null(control$callbacks[[e$type]])) {
         lapply(control$callbacks[[e$type]], function(fun) {
           if (is.function(fun)) {
             ui.log.debug(deparse(fun))
-            do.call(fun, list(var_name, typed_value, e))
+            do.call(fun, list(control$var_name, typed_value, e))
           }
         })
       }

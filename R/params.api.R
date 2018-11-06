@@ -6,9 +6,10 @@
 #' 
 #' The returned value is a shiny.tag structure, the associated rcloud.params.control is persisted in the packages environment and is used to invoke control-specific callback functions.
 #' 
-#' @param name the variable name
+#' @param var the variable name
 #' @param label the label for the control
 #' @param r_class type of the variable
+#' @param query variable parameter name
 #' @param tagFactory the function returning form input shiny.tags
 #' @param tagValueExtractor a function that extracts value specified via shiny.tag attributes
 #' @param qsValueExtractor a function that extracts value from a query string
@@ -18,7 +19,7 @@
 #' @param ... parameters passed to shiny.tag, if 'callbacks' list is among them, it is removed before it is passed to tagFactory
 #' @return shiny.tag representing the produced parameter control
 #'
-.paramFactory <- function(name, label, r_class,
+.paramFactory <- function(var, label, r_class, query = var,
                           tagFactory = function(...) {
                             do.call('tag', ...)
                           }, 
@@ -67,21 +68,21 @@
   ui.log.debug("Params for tag factory: ", params_in)
   inputTag <- do.call('tagFactory', params_in)
   
-  defaultValue <- .getVariableValue(name)
+  defaultValue <- .getVariableValue(var)
   
   tagValue <- tagValueExtractor(inputTag)
   
-  qsValue <- qsValueExtractor(name, uiToRValueMapper)
+  qsValue <- qsValueExtractor(query, uiToRValueMapper)
   
   value <- .selectValue(qsValue, tagValue, defaultValue)
   
   value <- nullValueProvider(value)
   
   if (length(value) > 0) {
-    assign(name, value, envir=globalenv())
+    assign(var, value, envir=globalenv())
   }
   
-  ui.log.debug("Parameter - ", paste0("Name: ", name, 
+  ui.log.debug("Parameter - ", paste0("Var: ", var, ", Par name: ", query,
                                       ", Default: ", paste(defaultValue, collapse = ","), 
                                       ", Default type: ", typeof(defaultValue), 
                                       ", Current: ", paste(value, collapse=","), 
@@ -90,7 +91,7 @@
   
   inputTag <- rToTagValueMapper(inputTag, defaultValue, value)
   
-  control_descriptor <- .createControl(label, name, uiToRValueMapper, inputTag, callbacks)
+  control_descriptor <- .createControl(label, var, uiToRValueMapper, inputTag, callbacks, par_name = query)
   
   .registerControl(control_descriptor)
   
@@ -105,22 +106,23 @@
 #' Creates rcloud.params.control structure
 #' 
 #' @param label the label to be displayed in the UI
-#' @param name the name of the variable
+#' @param var_name the name of the variable
 #' @param uiToRValueMapper function mapping UI values to R
 #' @param input_tag shiny.tag to be used for the input
 #' @param user_callbacks the list of callbacks specified by the user
+#' @param par_name parameter name, as used by the UI
 #' 
 #' @return rcloud.params.control structure
 #'
-.createControl <- function(label, name, uiToRValueMapper, input_tag, user_callbacks = list()) {
-  label_id <- .controlLabelId(name)
-  input_id <- .controlInputId(name)
-  control_id <- .controlId(name)
+.createControl <- function(label, var_name, uiToRValueMapper, input_tag, user_callbacks = list(), par_name = var_name) {
+  label_id <- .controlLabelId(par_name)
+  input_id <- .controlInputId(par_name)
+  control_id <- .controlId(par_name)
   input_tag$attribs$id <- input_id
   
-  varNameAttr <- .rcloudParamsAttr('name')
+  parNameAttr <- .rcloudParamsAttr('name')
   
-  input_tag$attribs[varNameAttr] <- name
+  input_tag$attribs[parNameAttr] <- par_name
   input_tag$attribs[.rcloudHtmlwidgetsCompactAttr()] <- TRUE
   
   labelMsg <- label
@@ -151,7 +153,7 @@
   }
   
   control_tag$attribs[.rcloudParamsAttrNamespace()] = TRUE
-  control_tag$attribs[varNameAttr] = name
+  control_tag$attribs[parNameAttr] = par_name
   
   assignValueCallback <- function(var_name, var_value, ...) {
     ui.log.debug(var_name, paste0(var_value, collapse = ","), typeof(var_value))
@@ -163,7 +165,8 @@
   ui.log.debug("HTML widget id: ", control_id)
   
   structure(list(id = control_id,
-                 name = name,
+                 name = par_name,
+                 var_name = var_name,
                  callbacks = callbacks, 
                  uiToRValueMapper = uiToRValueMapper, 
                  control_tag = control_tag),
