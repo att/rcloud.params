@@ -141,7 +141,7 @@
     
     
     function setUrlQuery(key, value, defaultValue) {
-      if (value !== undefined && value !== null && value !== '' && value != defaultValue) {
+      if (value !== undefined && value !== null && value !== '' && !_.isEqual(value, defaultValue)) {
           _varmap[key] = value;
       } else {
           delete _varmap[key];
