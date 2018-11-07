@@ -32,7 +32,7 @@
                               value
                             }
                           }, 
-                          rToTagValueMapper = .rToUIControlDefaultValueMapper(),
+                          rToTagValueMapper = .rToUIControlDefaultValueMapper(.rToUIValueMapper(r_class)),
                           uiToRValueMapper = .uiToRValueMapper(r_class),
                           ...) {
   
@@ -162,8 +162,6 @@
   
   callbacks <- .prependCallbackFunction(user_callbacks, 'change', assignValueCallback)
   
-  ui.log.debug("HTML widget id: ", control_id)
-  
   structure(list(id = control_id,
                  name = par_name,
                  var_name = var_name,
@@ -220,6 +218,7 @@
 .getMultiValueFromQueryParameter <- function(name, valueMapper) {
   qsValue <- input.QS[[name]]
   value <- NULL
+  ui.log.debug('QS value:', qsValue)
   if (!is.null(qsValue[1])) {
     parser <- .qsMultiValueParser()
     value <- valueMapper(parser(qsValue))
@@ -230,6 +229,7 @@
 .getSingleValueFromQueryParameter <- function(name, valueMapper) {
   qsValue <- input.QS[[name]]
   value <- NULL
+  ui.log.debug('QS value:', qsValue)
   if (!is.null(qsValue[1])) {
     parser <- .qsSingleValueParser()
     value <- valueMapper(parser(qsValue))
@@ -237,7 +237,7 @@
   value
 }
 
-.qsMultiValueParser <- function(value_type) {
+.qsMultiValueParser <- function() {
   function(value) {
     values <- strsplit(value[1], ',')[[1]]
     if (length(values) > 0) {
@@ -301,6 +301,16 @@
          asCharacterMapper)
 }
 
+.rToUIValueMapper <- function(r_class) {
+  
+  switch(r_class, 
+         'character' = function(x) { x },
+         'Date' = .toCharacterSafe,
+         'numeric' = .toCharacterSafe, 
+         'logical' = .toCharacterSafe, 
+         .toCharacterSafe)
+}
+
 .toCharacterSafe <- function(val) {
   if(!is.null(val) && !is.character(val)) {
     as.character(val)
@@ -312,30 +322,31 @@
   
 }
 
-.rToUIControlDefaultValueMapper <- function() {
-
+.rToUIControlDefaultValueMapper <- function(rToUIValueMapper = .toCharacterSafe) {
+  valueMapper = rToUIValueMapper
   function(tag, defaultValue, value) {
     if (!is.null(value)) {
-      tag$attribs$value <- .toCharacterSafe(value)
+      tag$attribs$value <- valueMapper(value)
     }
     if (!is.null(defaultValue)) {
-      tag$attribs[.rcloudParamsAttr('default-value')] <- .toCharacterSafe(defaultValue)
+      tag$attribs[.rcloudParamsAttr('default-value')] <- valueMapper(defaultValue)
     }
     tag
   }
 }
 
-.rToUIControlSelectValueMapper <- function(choices = NULL) {
+.rToUIControlSelectValueMapper <- function(choices = NULL, rToUIValueMapper = .toCharacterSafe) {
+  valueMapper = rToUIValueMapper
   localChoices <- choices
   function(tag, defaultValue, value) {
     options <- NULL
     if (is.null(names(localChoices))) {
       options <- list(lapply(localChoices, function(c) {
-        res <- tags$option(c)
-        typedChoice <- as.character(c)
-        if (typedChoice %in% value)
+        typedChoice <- valueMapper(c)
+        res <- tags$option(typedChoice)
+        if (typedChoice %in% valueMapper(value))
           res$attribs$selected <- NA
-        if(typedChoice %in% defaultValue) {
+        if(typedChoice %in% valueMapper(defaultValue)) {
           res$attribs[.rcloudParamsAttr('default-value')] <- 'true';
         }
         res
@@ -343,9 +354,9 @@
     } else {
       options <- list(lapply(names(localChoices), function(c) {
         res <- tags$option(localChoices[[c]], value=c)
-        if (c %in% value)
+        if (c %in% valueMapper(value))
           res$attribs$selected <- NA
-        if(c %in% defaultValue) {
+        if(c %in% valueMapper(defaultValue)) {
           res$attribs[.rcloudParamsAttr('default-value')] <- 'true';
         }
         res
@@ -385,7 +396,8 @@
          }
 }
 
-.rToUIControlRadioValueMapper <- function(choices = NULL) {
+.rToUIControlRadioValueMapper <- function(choices = NULL, rToUIValueMapper = .toCharacterSafe) {
+  valueMapper <- rToUIValueMapper
   localChoices <- choices
   function(tag, defaultValue, value) {
     options <- NULL
@@ -396,11 +408,11 @@
     }
     if (is.null(names(localChoices))) {
       options <- list(lapply(localChoices, function(c) {
-        typedChoice <- as.character(c)
-        res <- tags$input(type='radio', name = tag$attribs[.rcloudParamsAttr('radio-group-name')])
-        if (typedChoice %in% value)
+        typedChoice <- valueMapper(c)
+        res <- tags$input(type='radio', name = tag$attribs[.rcloudParamsAttr('radio-group-name')], value = typedChoice)
+        if (typedChoice %in% valueMapper(value))
           res$attribs$checked <- NA
-        if(typedChoice %in% defaultValue) {
+        if(typedChoice %in% valueMapper(defaultValue)) {
           res$attribs[.rcloudParamsAttr('default-value')] <- 'true';
         }
         if(required) {
@@ -411,9 +423,9 @@
     } else {
       options <- list(lapply(names(localChoices), function(c) {
         res <- tags$input(type='radio', name = tag$attribs[.rcloudParamsAttr('radio-group-name')], value=c)
-        if (c %in% value)
+        if (c %in% valueMapper(value))
           res$attribs$checked <- NA
-        if(c %in% defaultValue) {
+        if(c %in% valueMapper(defaultValue)) {
           res$attribs[.rcloudParamsAttr('default-value')] <- 'true';
         }
         if(required) {

@@ -331,15 +331,17 @@ buttonParam <-
 #'
 .dateParam <- function(name,
                       label = NULL,
+                      r_class = 'Date',
+                      tagFactory = function(...) {
+                        inputTag <- tag('input', c(list(type = 'date'), list(...)))
+                      },
                       ...) {
   
   .paramFactory(
     name,
     label,
-    'Date',
-    tagFactory = function(...) {
-      inputTag <- tag('input', c(list(type = 'date'), list(...)))
-    },
+    r_class = r_class,
+    tagFactory = tagFactory,
     ...
   )
   
@@ -350,14 +352,16 @@ buttonParam <-
 #' 
 .textParam <- function(name,
                       label = NULL,
+                      r_class = 'character',
+                      tagFactory = function(...) {
+                        inputTag <- tag('input', c(list(type = 'text'), list(...)))
+                      },
                       ...) {
   .paramFactory(
     name,
     label,
-    'character',
-    tagFactory = function(...) {
-      inputTag <- tag('input', c(list(type = 'text'), list(...)))
-    },
+    r_class = r_class,
+    tagFactory = tagFactory,
     ...
   )
 }
@@ -387,24 +391,26 @@ buttonParam <-
            label = NULL,
            min = NA,
            max = NA,
+           r_class = 'numeric',
+           tagFactory = function(...) {
+             params_in <- list(...)
+             type <- 'number'
+             if ('type' %in% names(params_in)) {
+               type <- params_in$type
+               params_in$type <- NULL
+             }
+             
+             inputTag <-
+               tag('input', c(list(type = type), params_in))
+           },
            ...) {
     .paramFactory(
       name,
       label,
-      'numeric',
-      tagFactory = function(...) {
-        params_in <- list(...)
-        type <- 'number'
-        if ('type' %in% names(params_in)) {
-          type <- params_in$type
-          params_in$type <- NULL
-        }
-        
-        inputTag <-
-          tag('input', c(list(type = type), params_in))
-      },
       min = min,
       max = max,
+      r_class = r_class,
+      tagFactory = tagFactory,
       ...
     )
   }
@@ -416,24 +422,30 @@ buttonParam <-
   function(name,
            label = NULL,
            choices = list(),
+           r_class = 'character',
+           tagFactory = function(...) {
+             tag('select', list(...))
+           },
+           tagValueExtractor = .getValueFromTagAttribute,
+           qsValueExtractor = .getMultiValueFromQueryParameter,
+           nullValueProvider = function(value) {
+             if (is.null(value) || any(is.na(value))) {
+               c()
+             } else {
+               value
+             }
+           },
+           rToTagValueMapper = .rToUIControlSelectValueMapper(choices),
            ...) {
     .paramFactory(
       name,
       label,
-      'character',
-      tagFactory = function(...) {
-        tag('select', list(...))
-      },
-      tagValueExtractor = .getValueFromTagAttribute,
-      qsValueExtractor = .getMultiValueFromQueryParameter,
-      nullValueProvider = function(value) {
-        if (is.null(value) || any(is.na(value))) {
-          c()
-        } else {
-          value
-        }
-      },
-      rToTagValueMapper = .rToUIControlSelectValueMapper(choices),
+      r_class,
+      tagFactory = tagFactory,
+      tagValueExtractor = tagValueExtractor,
+      qsValueExtractor = qsValueExtractor,
+      nullValueProvider = nullValueProvider,
+      rToTagValueMapper = rToTagValueMapper,
       ...
     )
   }
@@ -445,17 +457,20 @@ buttonParam <-
   function(name,
            label = NULL,
            choices = list(),
+           r_class = 'character',
+           tagFactory = function(...) {
+             res <- tag('div', list(...))
+             res$attribs[.rcloudParamsAttr('radio-group-name')] = name
+             res
+           },
+           rToTagValueMapper = .rToUIControlRadioValueMapper(choices),
            ...) {
     .paramFactory(
       name,
       label,
-      'character',
-      tagFactory = function(...) {
-        res <- tag('div', list(...))
-        res$attribs[.rcloudParamsAttr('radio-group-name')] = name
-        res
-      },
-      rToTagValueMapper = .rToUIControlRadioValueMapper(choices),
+      r_class = r_class,
+      tagFactory = tagFactory,
+      rToTagValueMapper = rToTagValueMapper,
       ...
     )
   }
@@ -466,36 +481,41 @@ buttonParam <-
 .logicalParam <-
   function(name,
            label = NULL,
+           r_class = 'logical',
+           tagFactory = function(...) {
+             tags$input(type = 'checkbox', class = "checkbox", ...)
+           },
+           tagValueExtractor = function(inputTag) {
+             tagValue <- NULL
+             if ('checked' %in% names(inputTag$attribs)) {
+               if (!is.null(inputTag$attribs$checked) &&
+                   !any(is.na(inputTag$attribs$checked))) {
+                 tagValue <- if (is.logical(inputTag$attribs$checked)) {
+                   inputTag$attribs$checked
+                 } else {
+                   TRUE
+                 }
+               }
+             }
+             tagValue
+           },
+           nullValueProvider = function(value) {
+             if (is.null(value) || is.na(value)) {
+               FALSE
+             } else {
+               value
+             }
+           },
+           rToTagValueMapper = .rToUIControlCheckboxValueMapper(),
            ...) {
     .paramFactory(
       name,
       label,
-      'logical',
-      tagFactory = function(...) {
-        tags$input(type = 'checkbox', class = "checkbox", ...)
-      },
-      tagValueExtractor = function(inputTag) {
-        tagValue <- NULL
-        if ('checked' %in% names(inputTag$attribs)) {
-          if (!is.null(inputTag$attribs$checked) &&
-              !any(is.na(inputTag$attribs$checked))) {
-            tagValue <- if (is.logical(inputTag$attribs$checked)) {
-              inputTag$attribs$checked
-            } else {
-              TRUE
-            }
-          }
-        }
-        tagValue
-      },
-      nullValueProvider = function(value) {
-        if (is.null(value) || is.na(value)) {
-          FALSE
-        } else {
-          value
-        }
-      },
-      rToTagValueMapper = .rToUIControlCheckboxValueMapper(),
+      r_class = r_class,
+      tagFactory = tagFactory,
+      tagValueExtractor = tagValueExtractor,
+      nullValueProvider = nullValueProvider,
+      rToTagValueMapper = rToTagValueMapper,
       ...
     )
   }

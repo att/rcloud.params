@@ -4,6 +4,14 @@ Notebook parameters for RCloud
 This RCloud package allows notebook variables to be exposed as parameters,
 both through query parameters and through UI elements. Useful for re-rendering a notebook and easily changing key inputs.
 
+
+# Installation
+
+* Install rcloud.params package
+* Enable `rcloud.params` extension via Settings panel (or add it to `rcloud.alluser.addons` property in conf/rcloud.conf settings file)
+
+> Note - due to https://github.com/att/rcloud/issues/1713, an attempt to use rcloud.params by importing it via notebook will prevent Notebook parameters from being parsed.
+
 # Frontend Control Functions
 
 ## HTML R Functions
@@ -33,8 +41,6 @@ Functions controlling the execution of notebook cells.
 `param` function allows for exposing notebook variables easily using default controls associated with R classes:
 
 ```{r}
-
-require(rcloud.params)
 
 z <- 10
 text_param <- "Default text"
@@ -70,8 +76,6 @@ compact(div(
 ## Text Input
 ```{r}
 
-require(rcloud.params)
-
 paramDiv(h1('Text input'))
 
 textVar <- "Some example message"
@@ -99,8 +103,6 @@ div(id="textValueFromHtmltools-result"))
 ## Numeric Input
 ```{r}
 
-require(rcloud.params)
-
 paramDiv(h1('Numeric input'))
 
 numericNotebookVar <- 10
@@ -125,8 +127,6 @@ div(id="numericValueFromHtmltools-result"))
 
 ## Slider Input
 ```{r}
-
-require(rcloud.params)
 
 paramDiv(h1('Numeric slider input'))
 
@@ -153,8 +153,6 @@ div(id="numericSliderValueFromHtmltools-result"))
 
 ## Single Select
 ```{r}
-
-require(rcloud.params)
 
 paramDiv(h1('Single select input'))
 
@@ -186,8 +184,6 @@ div(id="selectValueFromHtmltools-result"))
 ## Multi-Select
 ```{r}
 
-require(rcloud.params)
-
 paramDiv(h1('Miltiple select input'))
 
 multiSelectVar <- c(2,3)
@@ -217,8 +213,6 @@ div(id="multiSelectValueFromHtmltools-result"))
 
 ## Checkbox
 ```{r}
-
-require(rcloud.params)
 
 paramDiv(h1('Checkbox input'))
 
@@ -251,8 +245,6 @@ div(id="logicalValueFromHtmltools-result"))
 
 ```{r}
 
-require(rcloud.params)
-
 paramDiv(h1('Date input'))
 
 dateVar <- Sys.Date()
@@ -278,8 +270,6 @@ div(id="dateValueFromHtmltools-result"))
 ## Radio Buttons
 
 ```{r}
-
-require(rcloud.params)
 
 paramDiv(h1('Radio button input'))
 
@@ -312,8 +302,6 @@ div(id="choiceValueFromHtmltools-result"))
 
 ```{r}
 
-require(rcloud.params)
-
 paramDiv(h1('Action buttons'))
 
 paramDiv(
@@ -338,8 +326,6 @@ div(id="action-result2")
 ## Simple Example
 
 ```{r}
-
-require(rcloud.params)
 
 z <- 10
 text_param = "Default text"
@@ -368,8 +354,6 @@ paramDiv(id='result-div')
 
 ```{r}
 
-require(rcloud.params)
-
 paramDiv(h1('Reactive form'))
 
 fromVar <- 10
@@ -394,8 +378,6 @@ plot(c(fromVar:toVar))
 
 ### Cell 1
 ```{r}
-
-require(rcloud.params)
 
 paramDiv(h1('Reactive form'))
 
@@ -444,8 +426,6 @@ The following code displays a parameters form which blocks notebook execution un
 > Note, in case of a blocking form, any registered reactive callback functions on specific controls are disabled.
 
 ```{r}
-
-require(rcloud.params)
 
 z <- 10
 text_param = "Default text"
