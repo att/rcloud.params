@@ -4,7 +4,11 @@
 \alias{.numericParam}
 \title{Creates numeric input control}
 \usage{
-.numericParam(name, label = NULL, min = NA, max = NA, ...)
+.numericParam(name, label = NULL, min = NA, max = NA,
+  r_class = "numeric", tagFactory = function(...) {     params_in <-
+  list(...)     type <- "number"     if ("type" \%in\% names(params_in)) { 
+         type <- params_in$type         params_in$type <- NULL     }    
+  inputTag <- tag("input", c(list(type = type), params_in)) }, ...)
 }
 \description{
 Creates numeric input control

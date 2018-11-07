@@ -4,7 +4,11 @@
 \alias{.choiceParam}
 \title{Creates radio buttons group input control}
 \usage{
-.choiceParam(name, label = NULL, choices = list(), ...)
+.choiceParam(name, label = NULL, choices = list(),
+  r_class = "character", tagFactory = function(...) {     res <-
+  tag("div", list(...))    
+  res$attribs[.rcloudParamsAttr("radio-group-name")] = name     res },
+  rToTagValueMapper = .rToUIControlRadioValueMapper(choices), ...)
 }
 \description{
 Creates radio buttons group input control

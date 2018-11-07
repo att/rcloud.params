@@ -4,7 +4,13 @@
 \alias{.selectParam}
 \title{Creates select input control}
 \usage{
-.selectParam(name, label = NULL, choices = list(), ...)
+.selectParam(name, label = NULL, choices = list(),
+  r_class = "character", tagFactory = function(...) {     tag("select",
+  list(...)) }, tagValueExtractor = .getValueFromTagAttribute,
+  qsValueExtractor = .getMultiValueFromQueryParameter,
+  nullValueProvider = function(value) {     if (is.null(value) ||
+  any(is.na(value))) {         c()     }     else {         value     } },
+  rToTagValueMapper = .rToUIControlSelectValueMapper(choices), ...)
 }
 \description{
 Creates select input control

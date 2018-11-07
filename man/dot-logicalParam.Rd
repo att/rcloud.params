@@ -4,7 +4,18 @@
 \alias{.logicalParam}
 \title{Creates checkbox input control}
 \usage{
-.logicalParam(name, label = NULL, ...)
+.logicalParam(name, label = NULL, r_class = "logical",
+  tagFactory = function(...) {     tags$input(type = "checkbox", class =
+  "checkbox", ...) }, tagValueExtractor = function(inputTag) {    
+  tagValue <- NULL     if ("checked" \%in\% names(inputTag$attribs)) {     
+     if (!is.null(inputTag$attribs$checked) &&
+  !any(is.na(inputTag$attribs$checked))) {             tagValue <- if
+  (is.logical(inputTag$attribs$checked)) {                
+  inputTag$attribs$checked             }             else {                
+  TRUE             }         }     }     tagValue },
+  nullValueProvider = function(value) {     if (is.null(value) ||
+  is.na(value)) {         FALSE     }     else {         value     } },
+  rToTagValueMapper = .rToUIControlCheckboxValueMapper(), ...)
 }
 \description{
 Creates checkbox input control

@@ -10,7 +10,7 @@
   qsValueExtractor = .getSingleValueFromQueryParameter,
   nullValueProvider = function(value) {     if (is.null(value) ||
   any(is.na(value))) {         ""     }     else {         value     } },
-  rToTagValueMapper = .rToUIControlDefaultValueMapper(),
+  rToTagValueMapper = .rToUIControlDefaultValueMapper(.rToUIValueMapper(r_class)),
   uiToRValueMapper = .uiToRValueMapper(r_class), ...)
 }
 \arguments{

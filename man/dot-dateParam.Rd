@@ -4,7 +4,9 @@
 \alias{.dateParam}
 \title{Creates date-picker input control}
 \usage{
-.dateParam(name, label = NULL, ...)
+.dateParam(name, label = NULL, r_class = "Date",
+  tagFactory = function(...) {     inputTag <- tag("input", c(list(type =
+  "date"), list(...))) }, ...)
 }
 \description{
 Creates date-picker input control
