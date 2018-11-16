@@ -102,6 +102,17 @@
   assign(control_descriptor$name, value = control_descriptor, envir = .params)
 }
 
+.addCallback <- function(param, type, FUN = NULL) {
+  if(!is.null(FUN)) {
+    if(!exists(param, envir = .params)) {
+      stop(paste0("Parameter '" +  param + "' does not exist."))
+    }
+    control <- get(param, envir = .params)
+    control$callbacks[[type]] <- c(control$callbacks[[type]], FUN)
+    .registerControl(control)
+  }
+}
+
 #'
 #' Creates rcloud.params.control structure
 #' 

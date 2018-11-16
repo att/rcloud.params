@@ -78,6 +78,21 @@ choiceParam <-  function(x, ...) {
   .choiceParam(name, ...)
 }
 
+
+#' Add callback to existing parameter
+#' 
+#' @param type type of event - valid options are: `change`, `submit`
+#' @param FUN callback function
+#' 
+#' @export
+addCallback <- function(object, type, FUN) UseMethod("addCallback", object) 
+
+#' @export
+addCallback.default <- function(object, type, FUN) {
+  name <- deparse(substitute(object))
+  .addCallback(name, type, FUN)
+}
+
 #' @export
 print.rcloud.params.control <-
   function(x, ..., view = interactive()) {
@@ -176,24 +191,39 @@ paramSet <- function(...,
     stop('No parameters were provided!')
   }
   
-  in_params$callbacks <- NULL
-  in_params$on_submit <- NULL
-  
   callbacks <- list()
   
+  if ('callbacks' %in% names(in_params)) {
+    callbacks <- .processCallbackFunctions(in_params$callbacks)
+  }
+  in_params$callbacks <- NULL
+  
   if (!is.null(on_submit)) {
-    callbacks$submit <- on_submit
+    if (!'submit' %in% names(callbacks)) {
+      callbacks$submit <- list()
+    }
+    callbacks$submit <- c(callbacks$submit, on_submit)
+    in_params$on_submit <- NULL
   }
   
   content = tags$form(name = name, in_params)
   content$attribs[.rcloudHtmlwidgetsCompactAttr()] <- TRUE
   content$attribs[.rcloudParamsAttrNamespace()] <- TRUE
   
-  form_callbacks <- .processCallbackFunctions(callbacks)
+  lapply(in_params, function(par) {
+    if('shiny.tag' %in% class(par)) {
+      parName <- par$attribs[[.rcloudParamsAttr('name')]]
+      if(!is.null(parName)) {
+        lapply(callbacks$change, function(c) {
+          .addCallback(parName, 'change', c)
+        })
+      }
+    }
+  })
   
   param_set_descriptor <- structure(list(name = name, 
                                          content = content, 
-                                         callbacks = form_callbacks, 
+                                         callbacks = callbacks, 
                                          reactive = TRUE, 
                                          wait_if_invalid = wait_if_invalid,
                                          hide_source = hide_source,
