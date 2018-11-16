@@ -215,10 +215,16 @@
   val
 }
 
-.getMultiValueFromQueryParameter <- function(name, valueMapper) {
-  qsValue <- input.QS[[name]]
-  value <- NULL
+.getQueryParams <- function(name) {
+  qparams <- get(QUERY_PARAMS, envir = .query.params)
+  qsValue <- qparams[[name]]
   ui.log.debug('QS value:', qsValue)
+  qsValue
+}
+
+.getMultiValueFromQueryParameter <- function(name, valueMapper) {
+  qsValue <- .getQueryParams(name)
+  value <- NULL
   if (!is.null(qsValue[1])) {
     parser <- .qsMultiValueParser()
     value <- valueMapper(parser(qsValue))
@@ -227,9 +233,8 @@
 }
 
 .getSingleValueFromQueryParameter <- function(name, valueMapper) {
-  qsValue <- input.QS[[name]]
+  qsValue <- .getQueryParams(name)
   value <- NULL
-  ui.log.debug('QS value:', qsValue)
   if (!is.null(qsValue[1])) {
     parser <- .qsSingleValueParser()
     value <- valueMapper(parser(qsValue))

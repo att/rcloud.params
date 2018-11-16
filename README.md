@@ -8,9 +8,8 @@ both through query parameters and through UI elements. Useful for re-rendering a
 # Installation
 
 * Install rcloud.params package
-* Enable `rcloud.params` extension via Settings panel (or add it to `rcloud.alluser.addons` property in conf/rcloud.conf settings file)
+* load `rcloud.params` in notebook cell or enable `rcloud.params` extension via Settings panel (or add it to `rcloud.alluser.addons` property in conf/rcloud.conf settings file)
 
-> Note - due to https://github.com/att/rcloud/issues/1713, an attempt to use rcloud.params by importing it via notebook will prevent Notebook parameters from being parsed.
 
 # Frontend Control Functions
 

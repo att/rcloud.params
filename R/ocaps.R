@@ -19,3 +19,7 @@ dispatchEvent <- function(par_name, var_value, e) {
   }
   invisible(TRUE)
 }
+
+setQSParams <- function(params) {
+  assign(QUERY_PARAMS, params, envir = .query.params)  # $notebook in list with notebook id string
+}

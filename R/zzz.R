@@ -1,10 +1,11 @@
 frontend <- NULL
-input.QS <- NULL
 
 .params <- new.env()
 .options <- new.env()
+.query.params <- new.env()
 
 DEBUG_OPTION <- 'DEBUG'
+QUERY_PARAMS <- 'QUERY_PARAMS'
 
 .onLoad <- function(libname, pkgname)
 {
@@ -18,10 +19,10 @@ DEBUG_OPTION <- 'DEBUG'
   
   if(!is.null(frontend)) {
     ocaps <- list(
-      handle_event = rcloud.support:::make.oc(dispatchEvent));
+      handle_event = rcloud.support:::make.oc(dispatchEvent), 
+      set_qs_params = rcloud.support:::make.oc(setQSParams));
     
-    # init calls js queryString which grabs url and splits. init also has update method 
-    input.QS <<- frontend$init(ocaps)  # $notebook in list with notebook id string
+    setQSParams(frontend$init(ocaps))
   }
   
   assign(DEBUG_OPTION, .isDebugEnabledInRCloudConfig(), envir = .options)

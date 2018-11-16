@@ -1,39 +1,4 @@
 ((function () {
-    // stolen from dc.graph.js, could be made its own tiny library
-    // Used to retrive and update url
-    var querystring = (function () {
-        var _init_window_href = null;
-        return {
-            parse: function () {
-                return (function (a) {
-                    if (a == "") return {};
-                    var b = {};
-                    for (var i = 0; i < a.length; ++i) {
-                        var p = a[i].split('=', 2);
-                        if (p.length == 1)
-                            b[p[0]] = "";
-                        else
-                            b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
-                    }
-                    return b;
-                })(window.location.search.substr(1).split('&'));
-            },
-            update: function (m) {
-                var base = window.location.protocol + '//' + window.location.host + window.location.pathname;
-                var parts = [];
-                for (var k in m)
-                    parts.push(k + '=' + encodeURIComponent(m[k]));
-                var url = base + '?' + parts.join('&');
-                if(!this._init_window_href) {
-                   this._init_window_href = window.location.href;
-                   window.history.pushState(null, null, url);
-                 } else {
-                   window.history.replaceState(null, null, url);
-                 }
-                 return this;
-            }
-        };
-    })();
 
     var _varmap = {}, _backend, _disabled_callbacks = [];
     
@@ -111,7 +76,7 @@
     function isValueProvided(control) {
       let val = getInputValue(control);
       if (val === null || val === undefined || val === '' || val.length === 0) val = undefined;
-      if(val === undefined) {
+      if (val === undefined) {
         return false;
       }
       return true;
@@ -119,8 +84,8 @@
     
     function invokeBackend(el, name, val, e) {
       let form = (!el.is('form')) ? el.closest('form'): el;
-      if(form.length > 0) {
-        if(_disabled_callbacks.indexOf(form.get(0).id) < 0) {
+      if (form.length > 0) {
+        if (_disabled_callbacks.indexOf(form.get(0).id) < 0) {
             _backend.handle_event(name, val, { type: e.type });
         }
       } else {
@@ -134,19 +99,18 @@
     
     function enableCallbacksForForm(form_id) {
       let index = _disabled_callbacks.indexOf(form_id);
-      if(index >= 0) {
+      if (index >= 0) {
         _disabled_callbacks.splice(index, 1);
       }
     }
     
-    
     function setUrlQuery(key, value, defaultValue) {
-      if (value !== undefined && value !== null && value !== '' && !_.isEqual(value, defaultValue)) {
+      if (value !== undefined && value !== null && value !== '' && !_.isEqual(value, defaultValue) && value != defaultValue) {
           _varmap[key] = value;
       } else {
           delete _varmap[key];
       }
-      querystring.update(_varmap);
+      url_utils.updateHistory(_varmap, {baseUrl: url_utils.getBase(), segments: url_utils.getPathSegments() });
     }
     
     
@@ -214,7 +178,8 @@
         init: function (ocaps, k) {
           
           _backend = RCloud.promisify_paths(ocaps, [  // jshint ignore:line
-                    ['handle_event']
+                    ['handle_event'],
+                    ['set_qs_params']
                 ], true);
           
           let attachCallbacks = (n) => {
@@ -265,8 +230,13 @@
                 }
           };
           
-          if(window.RCloudParams && RCloudParams.observer) {
-            RCloudParams.observer.disconnect();
+          if (window.RCloudParams) {
+            if (RCloudParams.observer) {
+              RCloudParams.observer.disconnect();
+            }
+            if (RCloudParams.notebook_on_load_callback) {
+              editor.remove_on_load_callback(RCloudParams.notebook_on_load_callback);
+            }
           }
 
           var observer = new MutationObserver(function(mutations) {
@@ -286,7 +256,17 @@
             observer
           };
           
-          _varmap = querystring.parse();
+          if (window.editor && window.shell && !shell.is_view_mode()) {
+            // RCloud updates URL after initializing the session, this means that stale url is parsed when a user switches between notebooks
+            // to handle this register a callback that will inject query parameters into R once the notebook got loaded
+            RCloudParams.notebook_on_load_callback = function() {
+              _varmap = url_utils.getQueryParams();
+              _backend.set_qs_params(_varmap);
+            }
+            editor.add_on_load_callback(RCloudParams.notebook_on_load_callback);
+          }
+          
+          _varmap = url_utils.getQueryParams();
           k(null, _varmap);
         },
         // copied over from rcloud.web - need to be moved back to caps.R       
