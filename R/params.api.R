@@ -42,7 +42,7 @@
   
   callbacks <- .processCallbackFunctions(paramsIn)
   
-  paramsIn <- .remove.callbacks.from.params(paramsIn)
+  paramsIn <- .removeCallbacksFromParams(paramsIn)
   
   if (!'required' %in% names(paramsIn)) {
     paramsIn$required <- NA
@@ -510,7 +510,7 @@
   }
 }
 
-.remove.callbacks.from.params <- function(params.in) {
+.removeCallbacksFromParams <- function(params.in) {
   params.in$callbacks <- NULL
   params.in$on.submit <- NULL
   params.in$on.change <- NULL

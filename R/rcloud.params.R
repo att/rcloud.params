@@ -203,28 +203,18 @@ paramSet <- function(...,
   if (length(paramsIn) == 0) {
     stop('No parameters were provided!')
   }
-  
+
   callbacks <- .processCallbackFunctions(paramsIn)
-  
-  paramsIn <- .remove.callbacks.from.params(paramsIn)
-  
+
+  paramsIn <- .removeCallbacksFromParams(paramsIn)
+
+  paramsIn <- .registerCallbacksToChildElements(paramsIn, callbacks)
+
   content = tags$form(name = name, paramsIn)
+
   content$attribs[.rcloudHtmlwidgetsCompactAttr()] <- TRUE
   content$attribs[.rcloudParamsAttrNamespace()] <- TRUE
-  
-  lapply(paramsIn, function(par) {
-    if ('shiny.tag' %in% class(par)) {
-      parName <- par$attribs[[.rcloudParamsAttr('name')]]
-      if (!is.null(parName)) {
-        for(event in EVENT_TYPES) {
-          lapply(callbacks[event], function(c) {
-            .addCallback(parName, event, c)
-          })
-        }
-      }
-    }
-  })
-  
+
   paramSetDescriptor <- structure(list(name = name, 
                                          content = content, 
                                          callbacks = callbacks, 
@@ -238,6 +228,23 @@ paramSet <- function(...,
   
   return(paramSetDescriptor)
 }
+
+.registerCallbacksToChildElements <- function(params.in, callbacks) {
+  lapply(params.in, function(par) {
+    if ('shiny.tag' %in% class(par)) {
+      parName <- par$attribs[[.rcloudParamsAttr('name')]]
+      if (!is.null(parName)) {
+        for (event in EVENT_TYPES) {
+          lapply(callbacks[event], function(c) {
+            .addCallback(parName, event, c)
+          })
+        }
+      }
+    }
+  })
+  params.in
+}
+
 
 #' Creates synchronous param set form
 #' 
@@ -264,7 +271,11 @@ synchronousParamSet <- function(...,
     stop('No parameters were provided!')
   }
   
-  paramsIn <- .remove.callbacks.from.params(paramsIn)
+  callbacks <- .processCallbackFunctions(paramsIn)
+  
+  paramsIn <- .removeCallbacksFromParams(paramsIn)
+  
+  paramsIn <- .registerCallbacksToChildElements(paramsIn, callbacks)
   
   content = tags$form(name = name, paramsIn)
   content$attribs[.rcloudHtmlwidgetsCompactAttr()] <- TRUE
@@ -272,6 +283,7 @@ synchronousParamSet <- function(...,
   
   paramSetDescriptor <- structure(list(name = name, 
                                          content = content, 
+                                         callbacks = callbacks, 
                                          onSubmit = on.submit, 
                                          reactive = FALSE, 
                                          waitIfInvalid = wait.if.invalid,
@@ -328,7 +340,7 @@ buttonParam <-
     
     callbacks <- .processCallbackFunctions(paramsIn)
     
-    paramsIn <- .remove.callbacks.from.params(paramsIn)
+    paramsIn <- .removeCallbacksFromParams(paramsIn)
     
     inputTag <-
       tags$button(value,
