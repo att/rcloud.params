@@ -93,6 +93,19 @@ addCallback.default <- function(object, type, FUN) {
   .addCallback(name, type, FUN)
 }
 
+#' Remove callbacks from existing parameter
+#' 
+#' @param type type of event - valid options are: `change`, `submit`, `click` (depending on the control type)
+#' 
+#' @export
+removeCallbacks <- function(object, type) UseMethod("removeCallbacks", object) 
+
+#' @export
+removeCallbacks.default <- function(object, type) {
+  name <- deparse(substitute(object))
+  .removeCallbacks(name, type)
+}
+
 #' @export
 print.rcloud.params.control <-
   function(x, ..., view = interactive()) {
@@ -191,32 +204,23 @@ paramSet <- function(...,
     stop('No parameters were provided!')
   }
   
-  callbacks <- list()
+  callbacks <- .processCallbackFunctions(paramsIn)
   
-  if ('callbacks' %in% names(paramsIn)) {
-    callbacks <- .processCallbackFunctions(paramsIn$callbacks)
-  }
-  paramsIn$callbacks <- NULL
-  
-  if (!is.null(on.submit)) {
-    if (!'submit' %in% names(callbacks)) {
-      callbacks$submit <- list()
-    }
-    callbacks$submit <- c(callbacks$submit, on.submit)
-    paramsIn$on.submit <- NULL
-  }
+  paramsIn <- .remove.callbacks.from.params(paramsIn)
   
   content = tags$form(name = name, paramsIn)
   content$attribs[.rcloudHtmlwidgetsCompactAttr()] <- TRUE
   content$attribs[.rcloudParamsAttrNamespace()] <- TRUE
   
   lapply(paramsIn, function(par) {
-    if('shiny.tag' %in% class(par)) {
+    if ('shiny.tag' %in% class(par)) {
       parName <- par$attribs[[.rcloudParamsAttr('name')]]
-      if(!is.null(parName)) {
-        lapply(callbacks$change, function(c) {
-          .addCallback(parName, 'change', c)
-        })
+      if (!is.null(parName)) {
+        for(event in EVENT_TYPES) {
+          lapply(callbacks[event], function(c) {
+            .addCallback(parName, event, c)
+          })
+        }
       }
     }
   })
@@ -260,7 +264,7 @@ synchronousParamSet <- function(...,
     stop('No parameters were provided!')
   }
   
-  paramsIn$on.submit <- NULL
+  paramsIn <- .remove.callbacks.from.params(paramsIn)
   
   content = tags$form(name = name, paramsIn)
   content$attribs[.rcloudHtmlwidgetsCompactAttr()] <- TRUE
@@ -322,22 +326,9 @@ buttonParam <-
     
     ui.log.debug("Extra params: ", paramsIn)
     
-    callbacks <- list()
+    callbacks <- .processCallbackFunctions(paramsIn)
     
-    if ('callbacks' %in% names(paramsIn)) {
-      callbacks <- .processCallbackFunctions(paramsIn$callbacks)
-    }
-    
-    paramsIn$callbacks <- NULL
-    
-    if ('on.click' %in% names(paramsIn)) {
-      if (!'click' %in% names(callbacks)) {
-        callbacks$click <- list()
-      }
-      callbacks$click <- c(callbacks$click, paramsIn$on.click)
-      paramsIn$on.click <- NULL
-      
-    }
+    paramsIn <- .remove.callbacks.from.params(paramsIn)
     
     inputTag <-
       tags$button(value,

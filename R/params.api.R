@@ -40,21 +40,9 @@
   
   ui.log.debug("Extra params: ", paramsIn)
   
-  callbacks <- list()
+  callbacks <- .processCallbackFunctions(paramsIn)
   
-  if ('callbacks' %in% names(paramsIn)) {
-    callbacks <- .processCallbackFunctions(paramsIn$callbacks)
-  }
-  paramsIn$callbacks <- NULL
-  
-  if ('on.change' %in% names(paramsIn)) {
-    if (!'change' %in% names(callbacks)) {
-      callbacks$change <- list()
-    }
-    callbacks$change <- c(callbacks$change, paramsIn$on.change)
-    paramsIn$on.change <- NULL
-  }
-  
+  paramsIn <- .remove.callbacks.from.params(paramsIn)
   
   if (!'required' %in% names(paramsIn)) {
     paramsIn$required <- NA
@@ -100,17 +88,6 @@
 
 .registerControl <- function(control.descriptor) {
   assign(control.descriptor$name, value = control.descriptor, envir = .params)
-}
-
-.addCallback <- function(param, type, FUN = NULL) {
-  if(!is.null(FUN)) {
-    if(!exists(param, envir = .params)) {
-      stop(paste0("Parameter '" +  param + "' does not exist."))
-    }
-    control <- get(param, envir = .params)
-    control$callbacks[[type]] <- c(control$callbacks[[type]], FUN)
-    .registerControl(control)
-  }
 }
 
 #'
@@ -470,13 +447,51 @@
   tagValue
 }
 
-.processCallbackFunctions <- function(callbacks.param = list()) {
+
+.addCallback <- function(param, type, FUN = NULL) {
+  if(!is.null(FUN)) {
+    if(!exists(param, envir = .params)) {
+      stop(paste0("Parameter '" +  param + "' does not exist."))
+    }
+    control <- get(param, envir = .params)
+    control$callbacks[[type]] <- c(control$callbacks[[type]], FUN)
+    .registerControl(control)
+  }
+}
+
+
+.removeCallbacks <- function(param, type) {
+  if(type %in% EVENT_TYPES) {
+    if(!exists(param, envir = .params)) {
+      stop(paste0("Parameter '" +  param + "' does not exist."))
+    }
+    control <- get(param, envir = .params)
+    control$callbacks[[type]] <- list()
+    .registerControl(control)
+  }
+}
+
+.processCallbackFunctions <- function(params.in) {
   callbacks <- list()
-  for (callback in names(callbacks.param)) {
-    if (!is.list(callbacks.param[[callback]])) {
-      callbacks[callback] <- list(callbacks.param[callback])
+  callbacksIn <- list();
+  if ('callbacks' %in% names(params.in)) {
+    callbacksIn <- params.in$callbacks
+  }
+  callbacks <- list()
+  for (callback in names(callbacksIn)) {
+    if (!is.list(callbacksIn[[callback]])) {
+      callbacks[callback] <- list(callbacksIn[callback])
     } else {
-      callbacks[callback] <- callbacks.param[callback]
+      callbacks[callback] <- callbacksIn[callback]
+    }
+  }
+  for(event in EVENT_TYPES) {
+    onEvent <- paste0('on.', event)
+    if (onEvent  %in% names(params.in)) {
+      if (!event %in% names(callbacks)) {
+        callbacks[[event]] <- list()
+      }
+      callbacks[[event]] <- c(callbacks[[event]], params.in[[onEvent]])
     }
   }
   invisible(callbacks)
@@ -493,4 +508,12 @@
     }
     callbacks
   }
+}
+
+.remove.callbacks.from.params <- function(params.in) {
+  params.in$callbacks <- NULL
+  params.in$on.submit <- NULL
+  params.in$on.change <- NULL
+  params.in$on.click <- NULL
+  params.in
 }

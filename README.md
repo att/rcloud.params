@@ -415,6 +415,65 @@ waitForForm('my-form')
 plot(c(fromVar:toVar)) 
 ```
 
+# Reactive Parameter Sets
+
+## Register Callback Function with Parameter Set
+
+`rcloud.params` supports registering a common callback function to all parameters defined in a single parameter set.
+
+### Cell 1
+```{r}
+paramDiv(h1('Reactive form'))
+
+fromVar <- 10
+
+paramSet(
+numericParam(fromVar, min = 11, label = "From value"),
+numericParam(toVar, min = 0, label = "To value"),
+on.change = function(var_name, var_value, ...) {
+      rcloud.run.cells.from(2)  
+    }
+)
+
+```
+
+### Cell 2
+```{r}
+plot(c(fromVar:toVar))
+
+```
+
+## Register Callbacks Dynamically
+
+`rcloud.params` package allows for dynamic registration of callbacks to existing parameters. In the following example a callback function is registered for a single parameter (`toVar`) from a parameter set.
+
+> Note, to remove callbacks of a given type registered with a parameter use `removeCallbacks` 
+
+### Cell 1
+```{r}
+paramDiv(h1('Reactive parameter set'))
+
+fromVar <- 10
+
+paramSet(
+numericParam(fromVar, min = 11, label = "From value"),
+numericParam(toVar, min = 0, label = "To value")
+)
+
+myCallback <- function(var_name, var_value, ...) {
+      rcloud.run.cells.from(2)  
+    }
+
+
+addCallback(toVar,  'change',  myCallback)
+
+```
+
+### Cell 2
+```{r}
+plot(c(fromVar:toVar))
+
+```
 
 
 
@@ -453,3 +512,17 @@ dateVar
 textVar
 
 ```
+
+
+# Debugging
+
+## Logging
+
+Debug messages logging can be enabled for `rcloud.params` package by invoking `rcloud.params.debug.on()` and disabled with `rcloud.params.debug.off()`.
+
+> The debug messages are printed to JavaScript console.
+
+
+
+
+

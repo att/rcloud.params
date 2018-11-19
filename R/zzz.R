@@ -7,6 +7,8 @@ frontend <- NULL
 DEBUG_OPTION <- 'DEBUG'
 QUERY_PARAMS <- 'QUERY_PARAMS'
 
+EVENT_TYPES <- c('change', 'click', 'submit')
+
 .onLoad <- function(libname, pkgname)
 {
   f <- function(module.name, module.path) {
