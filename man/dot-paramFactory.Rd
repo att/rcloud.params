@@ -4,37 +4,37 @@
 \alias{.paramFactory}
 \title{Factory creating rcloud.params controls}
 \usage{
-.paramFactory(var, label, r_class, query = var,
-  tagFactory = function(...) {     do.call("tag", ...) },
-  tagValueExtractor = .getValueFromTagAttribute,
-  qsValueExtractor = .getSingleValueFromQueryParameter,
-  nullValueProvider = function(value) {     if (is.null(value) ||
+.paramFactory(var, label, r.class, query = var,
+  tag.factory = function(...) {     do.call("tag", ...) },
+  tag.value.extractor = .getValueFromTagAttribute,
+  qs.value.extractor = .getSingleValueFromQueryParameter,
+  null.value.provider = function(value) {     if (is.null(value) ||
   any(is.na(value))) {         ""     }     else {         value     } },
-  rToTagValueMapper = .rToUIControlDefaultValueMapper(.rToUIValueMapper(r_class)),
-  uiToRValueMapper = .uiToRValueMapper(r_class), ...)
+  r.to.tag.value.mapper = .rToUIControlDefaultValueMapper(.rToUIValueMapper(r.class)),
+  ui.to.r.value.mapper = .uiToRValueMapper(r.class), ...)
 }
 \arguments{
 \item{var}{the variable name}
 
 \item{label}{the label for the control}
 
-\item{r_class}{type of the variable}
+\item{r.class}{type of the variable}
 
 \item{query}{variable parameter name}
 
-\item{tagFactory}{the function returning form input shiny.tags}
+\item{tag.factory}{the function returning form input shiny.tags}
 
-\item{tagValueExtractor}{a function that extracts value specified via shiny.tag attributes}
+\item{tag.value.extractor}{a function that extracts value specified via shiny.tag attributes}
 
-\item{qsValueExtractor}{a function that extracts value from a query string}
+\item{qs.value.extractor}{a function that extracts value from a query string}
 
-\item{nullValueProvider}{a function that returns a value that should be used if default, query string nor shiny.tag specify a value}
+\item{null.value.provider}{a function that returns a value that should be used if default, query string nor shiny.tag specify a value}
 
-\item{rToTagValueMapper}{a mapper that converts R value to a value accepted by shiny.tag}
+\item{r.to.tag.value.mapper}{a mapper that converts R value to a value accepted by shiny.tag}
 
-\item{uiToRValueMapper}{a mapper that converts UI value to an R value}
+\item{ui.to.r.value.mapper}{a mapper that converts UI value to an R value}
 
-\item{...}{parameters passed to shiny.tag, if 'callbacks' list is among them, it is removed before it is passed to tagFactory}
+\item{...}{parameters passed to shiny.tag, if 'callbacks' list is among them, it is removed before it is passed to tag.factory}
 }
 \value{
 shiny.tag representing the produced parameter control

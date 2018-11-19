@@ -4,7 +4,7 @@
 \alias{waitForSynchronousForm}
 \title{Blocks execution and waits for submission of a form associated with the given group}
 \usage{
-waitForSynchronousForm(form_id)
+waitForSynchronousForm(form.id)
 }
 \description{
 Blocks execution and waits for submission of a form associated with the given group

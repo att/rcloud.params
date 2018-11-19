@@ -4,9 +4,9 @@
 \alias{.textParam}
 \title{Creates text input control}
 \usage{
-.textParam(name, label = NULL, r_class = "character",
-  tagFactory = function(...) {     inputTag <- tag("input", c(list(type =
-  "text"), list(...))) }, ...)
+.textParam(name, label = NULL, r.class = "character",
+  tag.factory = function(...) {     inputTag <- tag("input", c(list(type
+  = "text"), list(...))) }, ...)
 }
 \description{
 Creates text input control

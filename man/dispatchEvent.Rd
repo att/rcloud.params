@@ -4,7 +4,7 @@
 \alias{dispatchEvent}
 \title{Dispatch event handling to appropriate control's callback function}
 \usage{
-dispatchEvent(par_name, var_value, e)
+dispatchEvent(par.name, var.value, e)
 }
 \description{
 Dispatch event handling to appropriate control's callback function

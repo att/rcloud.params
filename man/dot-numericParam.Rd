@@ -5,10 +5,10 @@
 \title{Creates numeric input control}
 \usage{
 .numericParam(name, label = NULL, min = NA, max = NA,
-  r_class = "numeric", tagFactory = function(...) {     params_in <-
-  list(...)     type <- "number"     if ("type" \%in\% names(params_in)) { 
-         type <- params_in$type         params_in$type <- NULL     }    
-  inputTag <- tag("input", c(list(type = type), params_in)) }, ...)
+  r.class = "numeric", tag.factory = function(...) {     paramsIn <-
+  list(...)     type <- "number"     if ("type" \%in\% names(paramsIn)) {  
+        type <- paramsIn$type         paramsIn$type <- NULL     }    
+  inputTag <- tag("input", c(list(type = type), paramsIn)) }, ...)
 }
 \description{
 Creates numeric input control

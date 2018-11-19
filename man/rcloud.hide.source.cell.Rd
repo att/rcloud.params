@@ -4,7 +4,7 @@
 \alias{rcloud.hide.source.cell}
 \title{Hide cell source}
 \usage{
-rcloud.hide.source.cell(cell_id)
+rcloud.hide.source.cell(cell.id)
 }
 \description{
 Hide cell source

@@ -4,20 +4,20 @@
 \alias{synchronousParamSet}
 \title{Creates synchronous param set form}
 \usage{
-synchronousParamSet(..., on_submit = function(form_name, values, ...) {
+synchronousParamSet(..., on.submit = function(form.name, values, ...) {
   }, name = paste0("form_", as.integer(runif(1) * 1e+06)),
-  wait_if_invalid = TRUE, hide_source = FALSE)
+  wait.if.invalid = TRUE, hide.source = FALSE)
 }
 \arguments{
 \item{...}{child elements (shiny.tags)}
 
-\item{on_submit}{callback function that should be invoked when form gets submitted}
+\item{on.submit}{callback function that should be invoked when form gets submitted}
 
 \item{name}{of the form}
 
-\item{wait_if_invalid}{should notebook execution be blocked if parameter values are invalid}
+\item{wait.if.invalid}{should notebook execution be blocked if parameter values are invalid}
 
-\item{hide_source}{should the source of the cell displaying the form be hidden}
+\item{hide.source}{should the source of the cell displaying the form be hidden}
 }
 \value{
 rcloud.params.param.set structure

@@ -5,12 +5,13 @@
 \title{Creates select input control}
 \usage{
 .selectParam(name, label = NULL, choices = list(),
-  r_class = "character", tagFactory = function(...) {     tag("select",
-  list(...)) }, tagValueExtractor = .getValueFromTagAttribute,
-  qsValueExtractor = .getMultiValueFromQueryParameter,
-  nullValueProvider = function(value) {     if (is.null(value) ||
+  r.class = "character", tag.factory = function(...) {    
+  tag("select", list(...)) },
+  tag.value.extractor = .getValueFromTagAttribute,
+  qs.value.extractor = .getMultiValueFromQueryParameter,
+  null.value.provider = function(value) {     if (is.null(value) ||
   any(is.na(value))) {         c()     }     else {         value     } },
-  rToTagValueMapper = .rToUIControlSelectValueMapper(choices), ...)
+  r.to.tag.value.mapper = .rToUIControlSelectValueMapper(choices), ...)
 }
 \description{
 Creates select input control

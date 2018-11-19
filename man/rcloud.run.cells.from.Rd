@@ -4,7 +4,7 @@
 \alias{rcloud.run.cells.from}
 \title{Run all cells starting from the given cell id}
 \usage{
-rcloud.run.cells.from(cell_id)
+rcloud.run.cells.from(cell.id)
 }
 \description{
 Run all cells starting from the given cell id

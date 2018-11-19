@@ -4,20 +4,20 @@
 \alias{paramSet}
 \title{Creates param set form}
 \usage{
-paramSet(..., on_submit = function(form_name, variables, ...) { },
+paramSet(..., on.submit = function(form.name, variables, ...) { },
   name = paste0("form_", as.integer(runif(1) * 1e+06)),
-  wait_if_invalid = TRUE, hide_source = FALSE)
+  wait.if.invalid = TRUE, hide.source = FALSE)
 }
 \arguments{
 \item{...}{child elements (shiny.tags)}
 
-\item{on_submit}{callback function to invoke when form is submitted}
+\item{on.submit}{callback function to invoke when form is submitted}
 
 \item{name}{of the form}
 
-\item{wait_if_invalid}{should notebook execution be stopped if parameter values are invalid}
+\item{wait.if.invalid}{should notebook execution be stopped if parameter values are invalid}
 
-\item{hide_source}{should the source of the cell displaying the form be hidden}
+\item{hide.source}{should the source of the cell displaying the form be hidden}
 }
 \value{
 rcloud.params.param.set structure

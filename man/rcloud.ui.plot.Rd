@@ -4,12 +4,12 @@
 \alias{rcloud.ui.plot}
 \title{Generate plot in an HTML element}
 \usage{
-rcloud.ui.plot(selector, plot_fun, width = 300, height = 300)
+rcloud.ui.plot(selector, plot.fun, width = 300, height = 300)
 }
 \arguments{
 \item{selector}{target element selector, e.g. '#my-div'}
 
-\item{plot_fun}{function producing a plot}
+\item{plot.fun}{function producing a plot}
 
 \item{width}{width of the plot}
 

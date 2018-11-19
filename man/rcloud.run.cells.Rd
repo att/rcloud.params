@@ -4,7 +4,7 @@
 \alias{rcloud.run.cells}
 \title{Run cells with given ids}
 \usage{
-rcloud.run.cells(cell_ids)
+rcloud.run.cells(cell.ids)
 }
 \description{
 Run cells with given ids
