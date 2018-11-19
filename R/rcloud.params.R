@@ -81,7 +81,7 @@ choiceParam <-  function(x, ...) {
 
 #' Add callback to existing parameter
 #' 
-#' @param type type of event - valid options are: `change`, `submit`
+#' @param type type of event - valid options are: `change`, `submit`, `click` (depending on the control type)
 #' @param FUN callback function
 #' 
 #' @export
@@ -97,7 +97,7 @@ addCallback.default <- function(object, type, FUN) {
 print.rcloud.params.control <-
   function(x, ..., view = interactive()) {
     ui.log.debug("Printing widget: ", x$id)
-    rcloud.html.out(as.character(x$control_tag, rcloud_htmlwidgets_print = FALSE))
+    rcloud.html.out(as.character(x$controlTag, rcloud_htmlwidgets_print = FALSE))
   }
 
 
@@ -106,14 +106,14 @@ print.rcloud.params.control <-
 #' @export
 print.rcloud.params.param.set <- function(x, ..., view = interactive()) {
   
-  if(x$hide_source) {
+  if(x$hideSource) {
     rcloud.hide.source.current.cell()
   }
   
   # print shiny.tag
   print(x$content)
   
-  if (x$wait_if_invalid) {
+  if (x$waitIfInvalid) {
     if (x$reactive) {
       waitForForm(x$name)
     } else {
@@ -124,13 +124,13 @@ print.rcloud.params.param.set <- function(x, ..., view = interactive()) {
         lapply(controlValues, function(el) {
           if (exists(el$name, .params)) {
             control <- get(el$name, .params)
-            typed_value <- control$uiToRValueMapper(el$value)
-            assign(el$name, typed_value, envir=globalenv())
+            typedValue <- control$uiToRValueMapper(el$value)
+            assign(el$name, typedValue, envir=globalenv())
           }
         })
         
-        if (!is.null(x$on_submit) && is.function(x$on_submit)) {
-          x$on_submit(x$name, controlValues)
+        if (!is.null(x$on.submit) && is.function(x$on.submit)) {
+          x$on.submit(x$name, controlValues)
         }
       }
     }
@@ -169,48 +169,48 @@ paramDiv <- function(...) {
 #' Note! paramSet is not a shiny.tag, this means that it may not be wrapped in htmltools shiny.tag
 #' 
 #' @param ... child elements (shiny.tags)
-#' @param on_submit callback function to invoke when form is submitted
+#' @param on.submit callback function to invoke when form is submitted
 #' @param name of the form
-#' @param wait_if_invalid should notebook execution be stopped if parameter values are invalid
-#' @param hide_source should the source of the cell displaying the form be hidden
+#' @param wait.if.invalid should notebook execution be stopped if parameter values are invalid
+#' @param hide.source should the source of the cell displaying the form be hidden
 #' 
 #' @return rcloud.params.param.set structure 
 #' 
 #' @export 
 paramSet <- function(..., 
-                     on_submit = function(form_name, variables, ...) {
+                     on.submit = function(form.name, variables, ...) {
                        
                      }, 
                      name = paste0("form_", as.integer(runif(1)*1e6)), 
-                     wait_if_invalid = TRUE, 
-                     hide_source = FALSE) {
+                     wait.if.invalid = TRUE, 
+                     hide.source = FALSE) {
   
-  in_params <- list(...)
+  paramsIn <- list(...)
   
-  if (length(in_params) == 0) {
+  if (length(paramsIn) == 0) {
     stop('No parameters were provided!')
   }
   
   callbacks <- list()
   
-  if ('callbacks' %in% names(in_params)) {
-    callbacks <- .processCallbackFunctions(in_params$callbacks)
+  if ('callbacks' %in% names(paramsIn)) {
+    callbacks <- .processCallbackFunctions(paramsIn$callbacks)
   }
-  in_params$callbacks <- NULL
+  paramsIn$callbacks <- NULL
   
-  if (!is.null(on_submit)) {
+  if (!is.null(on.submit)) {
     if (!'submit' %in% names(callbacks)) {
       callbacks$submit <- list()
     }
-    callbacks$submit <- c(callbacks$submit, on_submit)
-    in_params$on_submit <- NULL
+    callbacks$submit <- c(callbacks$submit, on.submit)
+    paramsIn$on.submit <- NULL
   }
   
-  content = tags$form(name = name, in_params)
+  content = tags$form(name = name, paramsIn)
   content$attribs[.rcloudHtmlwidgetsCompactAttr()] <- TRUE
   content$attribs[.rcloudParamsAttrNamespace()] <- TRUE
   
-  lapply(in_params, function(par) {
+  lapply(paramsIn, function(par) {
     if('shiny.tag' %in% class(par)) {
       parName <- par$attribs[[.rcloudParamsAttr('name')]]
       if(!is.null(parName)) {
@@ -221,18 +221,18 @@ paramSet <- function(...,
     }
   })
   
-  param_set_descriptor <- structure(list(name = name, 
+  paramSetDescriptor <- structure(list(name = name, 
                                          content = content, 
                                          callbacks = callbacks, 
                                          reactive = TRUE, 
-                                         wait_if_invalid = wait_if_invalid,
-                                         hide_source = hide_source,
+                                         waitIfInvalid = wait.if.invalid,
+                                         hideSource = hide.source,
                                          uiToRValueMapper = function(x) { x }
                                          ), class="rcloud.params.param.set")
   
-  .registerControl(param_set_descriptor)
+  .registerControl(paramSetDescriptor)
   
-  return(param_set_descriptor)
+  return(paramSetDescriptor)
 }
 
 #' Creates synchronous param set form
@@ -240,43 +240,43 @@ paramSet <- function(...,
 #' Note! paramSet is not a shiny.tag, this means that it may not be wrapped in htmltools shiny.tag
 #' 
 #' @param ... child elements (shiny.tags)
-#' @param on_submit callback function that should be invoked when form gets submitted
+#' @param on.submit callback function that should be invoked when form gets submitted
 #' @param name of the form
-#' @param wait_if_invalid should notebook execution be blocked if parameter values are invalid
-#' @param hide_source should the source of the cell displaying the form be hidden
+#' @param wait.if.invalid should notebook execution be blocked if parameter values are invalid
+#' @param hide.source should the source of the cell displaying the form be hidden
 #' 
 #' @return rcloud.params.param.set structure 
 #' 
 #' @export 
 synchronousParamSet <- function(...,
-                                on_submit = function(form_name, values, ...) {},
+                                on.submit = function(form.name, values, ...) {},
                                 name = paste0("form_", as.integer(runif(1)*1e6)), 
-                                wait_if_invalid = TRUE, 
-                                hide_source = FALSE) {
+                                wait.if.invalid = TRUE, 
+                                hide.source = FALSE) {
   
-  in_params <- list(...)
+  paramsIn <- list(...)
   
-  if (length(in_params) == 0) {
+  if (length(paramsIn) == 0) {
     stop('No parameters were provided!')
   }
   
-  in_params$on_submit <- NULL
+  paramsIn$on.submit <- NULL
   
-  content = tags$form(name = name, in_params)
+  content = tags$form(name = name, paramsIn)
   content$attribs[.rcloudHtmlwidgetsCompactAttr()] <- TRUE
   content$attribs[.rcloudParamsAttrNamespace()] <- TRUE
   
-  param_set_descriptor <- structure(list(name = name, 
+  paramSetDescriptor <- structure(list(name = name, 
                                          content = content, 
-                                         on_submit = on_submit, 
+                                         onSubmit = on.submit, 
                                          reactive = FALSE, 
-                                         wait_if_invalid = wait_if_invalid,
-                                         hide_source = hide_source
+                                         waitIfInvalid = wait.if.invalid,
+                                         hideSource = hide.source
                                          ), class="rcloud.params.param.set")
   
-  .registerControl(param_set_descriptor)
+  .registerControl(paramSetDescriptor)
   
-  return(param_set_descriptor)
+  return(paramSetDescriptor)
 }
 
 #'
@@ -288,25 +288,25 @@ submitParam <-
            value = 'Submit',
            label = '',
            ...) {
-    params_in <- list(...)
+    paramsIn <- list(...)
     
-    ui.log.debug("Extra params: ", params_in)
+    ui.log.debug("Extra params: ", paramsIn)
     
     inputTag <-
       tags$button(value,
                   id = name,
                   type = 'submit',
-                  params_in,
+                  paramsIn,
                   class = "btn btn-primary")
     
-    control_descriptor <-
+    controlDescriptor <-
       .createControl(label,
                      name,
                      .uiToRValueMapper('logical'),
                      inputTag
       )
     
-    return(control_descriptor$control_tag)
+    return(controlDescriptor$controlTag)
   }
 
 #'
@@ -318,24 +318,24 @@ buttonParam <-
            value = 'Button',
            label = '',
            ...) {
-    params_in <- list(...)
+    paramsIn <- list(...)
     
-    ui.log.debug("Extra params: ", params_in)
+    ui.log.debug("Extra params: ", paramsIn)
     
     callbacks <- list()
     
-    if ('callbacks' %in% names(params_in)) {
-      callbacks <- .processCallbackFunctions(params_in$callbacks)
+    if ('callbacks' %in% names(paramsIn)) {
+      callbacks <- .processCallbackFunctions(paramsIn$callbacks)
     }
     
-    params_in$callbacks <- NULL
+    paramsIn$callbacks <- NULL
     
-    if ('on_click' %in% names(params_in)) {
+    if ('on.click' %in% names(paramsIn)) {
       if (!'click' %in% names(callbacks)) {
         callbacks$click <- list()
       }
-      callbacks$click <- c(callbacks$click, params_in$on_click)
-      params_in$on_click <- NULL
+      callbacks$click <- c(callbacks$click, paramsIn$on.click)
+      paramsIn$on.click <- NULL
       
     }
     
@@ -344,16 +344,16 @@ buttonParam <-
                   id = name,
                   type = 'button',
                   class = "btn btn-default", 
-                  params_in)
+                  paramsIn)
     
-    control_descriptor <-
+    controlDescriptor <-
       .createControl(label,
                      name,
                      .uiToRValueMapper('logical'),
                      inputTag,
                      callbacks)
-    .registerControl(control_descriptor)
-    return(control_descriptor$control_tag)
+    .registerControl(controlDescriptor)
+    return(controlDescriptor$controlTag)
   }
 
 #'
@@ -361,8 +361,8 @@ buttonParam <-
 #'
 .dateParam <- function(name,
                       label = NULL,
-                      r_class = 'Date',
-                      tagFactory = function(...) {
+                      r.class = 'Date',
+                      tag.factory = function(...) {
                         inputTag <- tag('input', c(list(type = 'date'), list(...)))
                       },
                       ...) {
@@ -370,8 +370,8 @@ buttonParam <-
   .paramFactory(
     name,
     label,
-    r_class = r_class,
-    tagFactory = tagFactory,
+    r.class = r.class,
+    tag.factory = tag.factory,
     ...
   )
   
@@ -382,16 +382,16 @@ buttonParam <-
 #' 
 .textParam <- function(name,
                       label = NULL,
-                      r_class = 'character',
-                      tagFactory = function(...) {
+                      r.class = 'character',
+                      tag.factory = function(...) {
                         inputTag <- tag('input', c(list(type = 'text'), list(...)))
                       },
                       ...) {
   .paramFactory(
     name,
     label,
-    r_class = r_class,
-    tagFactory = tagFactory,
+    r.class = r.class,
+    tag.factory = tag.factory,
     ...
   )
 }
@@ -421,17 +421,17 @@ buttonParam <-
            label = NULL,
            min = NA,
            max = NA,
-           r_class = 'numeric',
-           tagFactory = function(...) {
-             params_in <- list(...)
+           r.class = 'numeric',
+           tag.factory = function(...) {
+             paramsIn <- list(...)
              type <- 'number'
-             if ('type' %in% names(params_in)) {
-               type <- params_in$type
-               params_in$type <- NULL
+             if ('type' %in% names(paramsIn)) {
+               type <- paramsIn$type
+               paramsIn$type <- NULL
              }
              
              inputTag <-
-               tag('input', c(list(type = type), params_in))
+               tag('input', c(list(type = type), paramsIn))
            },
            ...) {
     .paramFactory(
@@ -439,8 +439,8 @@ buttonParam <-
       label,
       min = min,
       max = max,
-      r_class = r_class,
-      tagFactory = tagFactory,
+      r.class = r.class,
+      tag.factory = tag.factory,
       ...
     )
   }
@@ -452,30 +452,30 @@ buttonParam <-
   function(name,
            label = NULL,
            choices = list(),
-           r_class = 'character',
-           tagFactory = function(...) {
+           r.class = 'character',
+           tag.factory = function(...) {
              tag('select', list(...))
            },
-           tagValueExtractor = .getValueFromTagAttribute,
-           qsValueExtractor = .getMultiValueFromQueryParameter,
-           nullValueProvider = function(value) {
+           tag.value.extractor = .getValueFromTagAttribute,
+           qs.value.extractor = .getMultiValueFromQueryParameter,
+           null.value.provider = function(value) {
              if (is.null(value) || any(is.na(value))) {
                c()
              } else {
                value
              }
            },
-           rToTagValueMapper = .rToUIControlSelectValueMapper(choices),
+           r.to.tag.value.mapper = .rToUIControlSelectValueMapper(choices),
            ...) {
     .paramFactory(
       name,
       label,
-      r_class,
-      tagFactory = tagFactory,
-      tagValueExtractor = tagValueExtractor,
-      qsValueExtractor = qsValueExtractor,
-      nullValueProvider = nullValueProvider,
-      rToTagValueMapper = rToTagValueMapper,
+      r.class,
+      tag.factory = tag.factory,
+      tag.value.extractor = tag.value.extractor,
+      qs.value.extractor = qs.value.extractor,
+      null.value.provider = null.value.provider,
+      r.to.tag.value.mapper = r.to.tag.value.mapper,
       ...
     )
   }
@@ -487,20 +487,20 @@ buttonParam <-
   function(name,
            label = NULL,
            choices = list(),
-           r_class = 'character',
-           tagFactory = function(...) {
+           r.class = 'character',
+           tag.factory = function(...) {
              res <- tag('div', list(...))
              res$attribs[.rcloudParamsAttr('radio-group-name')] = name
              res
            },
-           rToTagValueMapper = .rToUIControlRadioValueMapper(choices),
+           r.to.tag.value.mapper = .rToUIControlRadioValueMapper(choices),
            ...) {
     .paramFactory(
       name,
       label,
-      r_class = r_class,
-      tagFactory = tagFactory,
-      rToTagValueMapper = rToTagValueMapper,
+      r.class = r.class,
+      tag.factory = tag.factory,
+      r.to.tag.value.mapper = r.to.tag.value.mapper,
       ...
     )
   }
@@ -511,11 +511,11 @@ buttonParam <-
 .logicalParam <-
   function(name,
            label = NULL,
-           r_class = 'logical',
-           tagFactory = function(...) {
+           r.class = 'logical',
+           tag.factory = function(...) {
              tags$input(type = 'checkbox', class = "checkbox", ...)
            },
-           tagValueExtractor = function(inputTag) {
+           tag.value.extractor = function(inputTag) {
              tagValue <- NULL
              if ('checked' %in% names(inputTag$attribs)) {
                if (!is.null(inputTag$attribs$checked) &&
@@ -529,23 +529,23 @@ buttonParam <-
              }
              tagValue
            },
-           nullValueProvider = function(value) {
+           null.value.provider = function(value) {
              if (is.null(value) || is.na(value)) {
                FALSE
              } else {
                value
              }
            },
-           rToTagValueMapper = .rToUIControlCheckboxValueMapper(),
+           r.to.tag.value.mapper = .rToUIControlCheckboxValueMapper(),
            ...) {
     .paramFactory(
       name,
       label,
-      r_class = r_class,
-      tagFactory = tagFactory,
-      tagValueExtractor = tagValueExtractor,
-      nullValueProvider = nullValueProvider,
-      rToTagValueMapper = rToTagValueMapper,
+      r.class = r.class,
+      tag.factory = tag.factory,
+      tag.value.extractor = tag.value.extractor,
+      null.value.provider = null.value.provider,
+      r.to.tag.value.mapper = r.to.tag.value.mapper,
       ...
     )
   }

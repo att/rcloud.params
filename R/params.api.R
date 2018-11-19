@@ -8,75 +8,75 @@
 #' 
 #' @param var the variable name
 #' @param label the label for the control
-#' @param r_class type of the variable
+#' @param r.class type of the variable
 #' @param query variable parameter name
-#' @param tagFactory the function returning form input shiny.tags
-#' @param tagValueExtractor a function that extracts value specified via shiny.tag attributes
-#' @param qsValueExtractor a function that extracts value from a query string
-#' @param nullValueProvider a function that returns a value that should be used if default, query string nor shiny.tag specify a value
-#' @param rToTagValueMapper a mapper that converts R value to a value accepted by shiny.tag
-#' @param uiToRValueMapper a mapper that converts UI value to an R value
-#' @param ... parameters passed to shiny.tag, if 'callbacks' list is among them, it is removed before it is passed to tagFactory
+#' @param tag.factory the function returning form input shiny.tags
+#' @param tag.value.extractor a function that extracts value specified via shiny.tag attributes
+#' @param qs.value.extractor a function that extracts value from a query string
+#' @param null.value.provider a function that returns a value that should be used if default, query string nor shiny.tag specify a value
+#' @param r.to.tag.value.mapper a mapper that converts R value to a value accepted by shiny.tag
+#' @param ui.to.r.value.mapper a mapper that converts UI value to an R value
+#' @param ... parameters passed to shiny.tag, if 'callbacks' list is among them, it is removed before it is passed to tag.factory
 #' @return shiny.tag representing the produced parameter control
 #'
-.paramFactory <- function(var, label, r_class, query = var,
-                          tagFactory = function(...) {
+.paramFactory <- function(var, label, r.class, query = var,
+                          tag.factory = function(...) {
                             do.call('tag', ...)
                           }, 
-                          tagValueExtractor = .getValueFromTagAttribute, 
-                          qsValueExtractor = .getSingleValueFromQueryParameter, 
-                          nullValueProvider = function(value) {
+                          tag.value.extractor = .getValueFromTagAttribute, 
+                          qs.value.extractor = .getSingleValueFromQueryParameter, 
+                          null.value.provider = function(value) {
                             if(is.null(value) || any(is.na(value))) {
                               ''
                             } else {
                               value
                             }
                           }, 
-                          rToTagValueMapper = .rToUIControlDefaultValueMapper(.rToUIValueMapper(r_class)),
-                          uiToRValueMapper = .uiToRValueMapper(r_class),
+                          r.to.tag.value.mapper = .rToUIControlDefaultValueMapper(.rToUIValueMapper(r.class)),
+                          ui.to.r.value.mapper = .uiToRValueMapper(r.class),
                           ...) {
   
-  params_in <- list(...)
+  paramsIn <- list(...)
   
-  ui.log.debug("Extra params: ", params_in)
+  ui.log.debug("Extra params: ", paramsIn)
   
   callbacks <- list()
   
-  if ('callbacks' %in% names(params_in)) {
-    callbacks <- .processCallbackFunctions(params_in$callbacks)
+  if ('callbacks' %in% names(paramsIn)) {
+    callbacks <- .processCallbackFunctions(paramsIn$callbacks)
   }
-  params_in$callbacks <- NULL
+  paramsIn$callbacks <- NULL
   
-  if ('on_change' %in% names(params_in)) {
+  if ('on.change' %in% names(paramsIn)) {
     if (!'change' %in% names(callbacks)) {
       callbacks$change <- list()
     }
-    callbacks$change <- c(callbacks$change, params_in$on_change)
-    params_in$on_change <- NULL
+    callbacks$change <- c(callbacks$change, paramsIn$on.change)
+    paramsIn$on.change <- NULL
   }
   
   
-  if (!'required' %in% names(params_in)) {
-    params_in$required <- NA
+  if (!'required' %in% names(paramsIn)) {
+    paramsIn$required <- NA
   } else {
-    if (is.logical(params_in$required) && !params_in$required) {
-      params_in$required <- NULL
+    if (is.logical(paramsIn$required) && !paramsIn$required) {
+      paramsIn$required <- NULL
     }
   }
   
   
-  ui.log.debug("Params for tag factory: ", params_in)
-  inputTag <- do.call('tagFactory', params_in)
+  ui.log.debug("Params for tag factory: ", paramsIn)
+  inputTag <- do.call('tag.factory', paramsIn)
   
   defaultValue <- .getVariableValue(var)
   
-  tagValue <- tagValueExtractor(inputTag)
+  tagValue <- tag.value.extractor(inputTag)
   
-  qsValue <- qsValueExtractor(query, uiToRValueMapper)
+  qsValue <- qs.value.extractor(query, ui.to.r.value.mapper)
   
   value <- .selectValue(qsValue, tagValue, defaultValue)
   
-  value <- nullValueProvider(value)
+  value <- null.value.provider(value)
   
   if (length(value) > 0) {
     assign(var, value, envir=globalenv())
@@ -87,19 +87,19 @@
                                       ", Default type: ", typeof(defaultValue), 
                                       ", Current: ", paste(value, collapse=","), 
                                       ", Current type: ", typeof(value), 
-                                      ", Class: ", r_class))
+                                      ", Class: ", r.class))
   
-  inputTag <- rToTagValueMapper(inputTag, defaultValue, value)
+  inputTag <- r.to.tag.value.mapper(inputTag, defaultValue, value)
   
-  control_descriptor <- .createControl(label, var, uiToRValueMapper, inputTag, callbacks, par_name = query)
+  controlDescriptor <- .createControl(label, var, ui.to.r.value.mapper, inputTag, callbacks, par.name = query)
   
-  .registerControl(control_descriptor)
+  .registerControl(controlDescriptor)
   
-  return(control_descriptor$control_tag)  
+  return(controlDescriptor$controlTag)  
 }
 
-.registerControl <- function(control_descriptor) {
-  assign(control_descriptor$name, value = control_descriptor, envir = .params)
+.registerControl <- function(control.descriptor) {
+  assign(control.descriptor$name, value = control.descriptor, envir = .params)
 }
 
 .addCallback <- function(param, type, FUN = NULL) {
@@ -117,68 +117,68 @@
 #' Creates rcloud.params.control structure
 #' 
 #' @param label the label to be displayed in the UI
-#' @param var_name the name of the variable
-#' @param uiToRValueMapper function mapping UI values to R
-#' @param input_tag shiny.tag to be used for the input
-#' @param user_callbacks the list of callbacks specified by the user
-#' @param par_name parameter name, as used by the UI
+#' @param var.name the name of the variable
+#' @param ui.to.r.value.mapper function mapping UI values to R
+#' @param input.tag shiny.tag to be used for the input
+#' @param user.callbacks the list of callbacks specified by the user
+#' @param par.name parameter name, as used by the UI
 #' 
 #' @return rcloud.params.control structure
 #'
-.createControl <- function(label, var_name, uiToRValueMapper, input_tag, user_callbacks = list(), par_name = var_name) {
-  label_id <- .controlLabelId(par_name)
-  input_id <- .controlInputId(par_name)
-  control_id <- .controlId(par_name)
-  input_tag$attribs$id <- input_id
+.createControl <- function(label, var.name, ui.to.r.value.mapper, input.tag, user.callbacks = list(), par.name = var.name) {
+  labelId <- .controlLabelId(par.name)
+  inputId <- .controlInputId(par.name)
+  controlId <- .controlId(par.name)
+  input.tag$attribs$id <- inputId
   
   parNameAttr <- .rcloudParamsAttr('name')
   
-  input_tag$attribs[parNameAttr] <- par_name
-  input_tag$attribs[.rcloudHtmlwidgetsCompactAttr()] <- TRUE
+  input.tag$attribs[parNameAttr] <- par.name
+  input.tag$attribs[.rcloudHtmlwidgetsCompactAttr()] <- TRUE
   
   labelMsg <- label
   
-  if('type' %in% names(input_tag$attribs) && input_tag$attribs$type == 'checkbox') {
+  if('type' %in% names(input.tag$attribs) && input.tag$attribs$type == 'checkbox') {
     # just checkbox is a special case...
-    input_tag$attribs$class <- NULL
+    input.tag$attribs$class <- NULL
     
-    label_tag <- tags$label(labelMsg,
-                            id = label_id,
-                            'for' = input_id)
+    labelTag <- tags$label(labelMsg,
+                            id = labelId,
+                            'for' = inputId)
     
-    control_tag <- paramDiv(id = control_id,
-                            'class' = 'form-group', div(class='checkbox', label_tag, input_tag));
+    controlTag <- paramDiv(id = controlId,
+                            'class' = 'form-group', div(class='checkbox', labelTag, input.tag));
   } else {
-    if (input_tag$name != 'div') {
-      if (is.null(input_tag$attribs$class)) {
-        input_tag$attribs$class <- 'form-control'
+    if (input.tag$name != 'div') {
+      if (is.null(input.tag$attribs$class)) {
+        input.tag$attribs$class <- 'form-control'
       }
     }
-    label_tag <- tags$label(labelMsg, 
-                            id = label_id,
+    labelTag <- tags$label(labelMsg, 
+                            id = labelId,
                             'class' = 'control-label',
-                            'for' = input_id)
+                            'for' = inputId)
     
-    control_tag <- paramDiv(id = control_id, 
-                            'class' = 'form-group', label_tag, input_tag)
+    controlTag <- paramDiv(id = controlId, 
+                            'class' = 'form-group', labelTag, input.tag)
   }
   
-  control_tag$attribs[.rcloudParamsAttrNamespace()] = TRUE
-  control_tag$attribs[parNameAttr] = par_name
+  controlTag$attribs[.rcloudParamsAttrNamespace()] = TRUE
+  controlTag$attribs[parNameAttr] = par.name
   
-  assignValueCallback <- function(var_name, var_value, ...) {
-    ui.log.debug(var_name, paste0(var_value, collapse = ","), typeof(var_value))
-    assign(var_name, var_value, envir=globalenv());
+  assignValueCallback <- function(var.name, var.value, ...) {
+    ui.log.debug(var.name, paste0(var.value, collapse = ","), typeof(var.value))
+    assign(var.name, var.value, envir=globalenv());
   } # make call back ocap so variable created in js side can be assigned back to R
   
-  callbacks <- .prependCallbackFunction(user_callbacks, 'change', assignValueCallback)
+  callbacks <- .prependCallbackFunction(user.callbacks, 'change', assignValueCallback)
   
-  structure(list(id = control_id,
-                 name = par_name,
-                 var_name = var_name,
+  structure(list(id = controlId,
+                 name = par.name,
+                 varName = var.name,
                  callbacks = callbacks, 
-                 uiToRValueMapper = uiToRValueMapper, 
-                 control_tag = control_tag),
+                 uiToRValueMapper = ui.to.r.value.mapper, 
+                 controlTag = controlTag),
             class="rcloud.params.control")
   
 }
@@ -270,7 +270,7 @@
   }
 }
 
-.uiToRValueMapper <- function(r_class) {
+.uiToRValueMapper <- function(r.class) {
   
   isNotEmpty <- function(val) {
     !is.null(val) && !any(is.na(val)) && val != ''
@@ -285,7 +285,7 @@
     }
   }
   
-  switch(r_class, 
+  switch(r.class, 
          'character' = asCharacterMapper,
          'Date' = function(val) {
            if(isNotEmpty(val)) {
@@ -317,9 +317,9 @@
          asCharacterMapper)
 }
 
-.rToUIValueMapper <- function(r_class) {
+.rToUIValueMapper <- function(r.class) {
   
-  switch(r_class, 
+  switch(r.class, 
          'character' = function(x) { x },
          'Date' = .toCharacterSafe,
          'numeric' = .toCharacterSafe, 
@@ -338,8 +338,8 @@
   
 }
 
-.rToUIControlDefaultValueMapper <- function(rToUIValueMapper = .toCharacterSafe) {
-  valueMapper = rToUIValueMapper
+.rToUIControlDefaultValueMapper <- function(r.to.ui.value.mapper = .toCharacterSafe) {
+  valueMapper = r.to.ui.value.mapper
   function(tag, defaultValue, value) {
     if (!is.null(value)) {
       tag$attribs$value <- valueMapper(value)
@@ -351,8 +351,8 @@
   }
 }
 
-.rToUIControlSelectValueMapper <- function(choices = NULL, rToUIValueMapper = .toCharacterSafe) {
-  valueMapper = rToUIValueMapper
+.rToUIControlSelectValueMapper <- function(choices = NULL, r.to.ui.value.mapper = .toCharacterSafe) {
+  valueMapper = r.to.ui.value.mapper
   localChoices <- choices
   function(tag, defaultValue, value) {
     options <- NULL
@@ -412,8 +412,8 @@
          }
 }
 
-.rToUIControlRadioValueMapper <- function(choices = NULL, rToUIValueMapper = .toCharacterSafe) {
-  valueMapper <- rToUIValueMapper
+.rToUIControlRadioValueMapper <- function(choices = NULL, r.to.ui.value.mapper = .toCharacterSafe) {
+  valueMapper <- r.to.ui.value.mapper
   localChoices <- choices
   function(tag, defaultValue, value) {
     options <- NULL
@@ -470,26 +470,26 @@
   tagValue
 }
 
-.processCallbackFunctions <- function(callbacksParam = list()) {
+.processCallbackFunctions <- function(callbacks.param = list()) {
   callbacks <- list()
-  for (callback in names(callbacksParam)) {
-    if (!is.list(callbacksParam[[callback]])) {
-      callbacks[callback] <- list(callbacksParam[callback])
+  for (callback in names(callbacks.param)) {
+    if (!is.list(callbacks.param[[callback]])) {
+      callbacks[callback] <- list(callbacks.param[callback])
     } else {
-      callbacks[callback] <- callbacksParam[callback]
+      callbacks[callback] <- callbacks.param[callback]
     }
   }
   invisible(callbacks)
 }
 
-.prependCallbackFunction <- function(callbacks = list(), eventType = 'change', FUN) {
-  if (is.null(eventType) || is.null(FUN)) {
+.prependCallbackFunction <- function(callbacks = list(), event.type = 'change', FUN) {
+  if (is.null(event.type) || is.null(FUN)) {
     callbacks
   } else {
-    if (eventType %in% names(callbacks)) {
-      callbacks[[eventType]] <- append(list(FUN), callbacks[[eventType]])
+    if (event.type %in% names(callbacks)) {
+      callbacks[[event.type]] <- append(list(FUN), callbacks[[event.type]])
     } else {
-      callbacks[[eventType]] <- list(FUN)
+      callbacks[[event.type]] <- list(FUN)
     }
     callbacks
   }

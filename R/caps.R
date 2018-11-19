@@ -41,45 +41,45 @@ rcloud.ui.set <- function(selector, what) {
 #' Generate plot in an HTML element
 #'
 #' @param selector target element selector, e.g. '#my-div'
-#' @param plot_fun function producing a plot
+#' @param plot.fun function producing a plot
 #' @param width width of the plot
 #' @param height height of the plot
 #'
 #' @return TRUE
 #' @export
-rcloud.ui.plot <- function(selector, plot_fun, width = 300, height = 300) {
+rcloud.ui.plot <- function(selector, plot.fun, width = 300, height = 300) {
   wp1 <- WebPlot(width = width, height = height)
-  do.call(plot_fun, list(), envir = globalenv())
+  do.call(plot.fun, list(), envir = globalenv())
   frontend$setDiv(Rserve.context(), selector, .html.in(wp1))
 }
 
 #' Run cell with given id
 #' 
 #' @export
-rcloud.run.cell <- function(cell_id) {
-  frontend$runCell(cell_id)
+rcloud.run.cell <- function(cell.id) {
+  frontend$runCell(cell.id)
 }
 
 #' Run cells with given ids
 #' 
 #' @export
-rcloud.run.cells <- function(cell_ids) {
-  frontend$runCells(cell_ids)
+rcloud.run.cells <- function(cell.ids) {
+  frontend$runCells(cell.ids)
 }
 
 #' Run all cells starting from the given cell id
 #' 
 #' @export
-rcloud.run.cells.from <- function(cell_id) {
-  frontend$runCellsFrom(cell_id)
+rcloud.run.cells.from <- function(cell.id) {
+  frontend$runCellsFrom(cell.id)
 }
 
 
 #' Hide cell source
 #' 
 #' @export
-rcloud.hide.source.cell <- function(cell_id) {
-  frontend$hideCellSource(cell_id)
+rcloud.hide.source.cell <- function(cell.id) {
+  frontend$hideCellSource(cell.id)
 }
 
 #' Hide currently executed cell's source
@@ -90,18 +90,18 @@ rcloud.hide.source.current.cell <- function() {
 }
 
 #' @export
-waitForForm <- function(form_id) {
+waitForForm <- function(form.id) {
   # Always stop the execution of next cells, and pass control to reactive UI.
   rcloud.stop.execution()
-  frontend$waitForReactiveForm(Rserve.context(), form_id)
+  frontend$waitForReactiveForm(Rserve.context(), form.id)
 }
 #'
 #'  Blocks execution and waits for submission of a form associated with the given group
 #' 
 #' 
 #' @export
-waitForSynchronousForm <- function(form_id) {
-  frontend$waitForForm(Rserve.context(), form_id)
+waitForSynchronousForm <- function(form.id) {
+  frontend$waitForForm(Rserve.context(), form.id)
 }
 
 #' Gracefully stops execution of a notebook by allowing current cell to complete

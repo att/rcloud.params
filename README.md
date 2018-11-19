@@ -42,28 +42,28 @@ Functions controlling the execution of notebook cells.
 ```{r}
 
 z <- 10
-text_param <- "Default text"
-chck1 <- FALSE
-my_date <- Sys.Date()
+textVar <- "Default text"
+booleanVar <- FALSE
+dateVar <- Sys.Date()
 compact(div(
     param(z, min = -19, label = "Z value", 
-        on_change = function(var_name, var_value, ...) {
-            rcloud.ui.plot('#result', function() { plot(c(1:var_value)) })
+        on.change = function(var.name, var.value, ...) {
+            rcloud.ui.plot('#result', function() { plot(c(1:var.value)) })
             }),
     div(id="result"),
-    param(chck1, label = 'Yes?', 
-        on_change = function(name, val, ...) { 
+    param(booleanVar, label = 'Yes?', 
+        on.change = function(name, val, ...) { 
             rcloud.ui.set('#chck-1-result', val)
             }), 
     div(id = 'chck-1-result'),
-    param(my_date, label = 'Date',
-        on_change = function(name, val, ...) { 
+    param(dateVar, label = 'Date',
+        on.change = function(name, val, ...) { 
             rcloud.ui.set('#date-result', paste0(name, ' - ', typeof(val), '-', val))
             }), 
     div(id = 'date-result'),
-    param(text_param, label = "Text value",
-        on_change = function(var_name, var_value, ...) {
-            rcloud.ui.set('#text-result', paste0(var_name, ':', var_value))
+    param(textVar, label = "Text value",
+        on.change = function(var.name, var.value, ...) {
+            rcloud.ui.set('#text-result', paste0(var.name, ':', var.value))
             }),
     div(id="text-result"),
     submitParam(name='submit1')
@@ -81,19 +81,19 @@ textVar <- "Some example message"
 
 paramDiv(
 h3("Text with default value from variable"),
-textParam(textVar, label = "Text value", on_change = function(var_name, var_value, ...) { rcloud.ui.set('#textVar-result', var_value) }),
+textParam(textVar, label = "Text value", on.change = function(var.name, var.value, ...) { rcloud.ui.set('#textVar-result', var.value) }),
 div(id="textVar-result")
 )
 
 paramDiv(
 h3("Text with no variable"),
-textParam(textNoVar, label = "Text value", on_change = function(var_name, var_value, ...) { rcloud.ui.set('#textNoVar-result', var_value) }),
+textParam(textNoVar, label = "Text value", on.change = function(var.name, var.value, ...) { rcloud.ui.set('#textNoVar-result', var.value) }),
 div(id="textNoVar-result")
 )
 
 paramDiv(
 h3("Text with default value specified using htmltools tag"),
-textParam(textValueFromHtmltools, value = 'Value from attribute', label = "Text value", on_change = function(var_name, var_value, ...) { rcloud.ui.set('#textValueFromHtmltools-result', var_value) }),
+textParam(textValueFromHtmltools, value = 'Value from attribute', label = "Text value", on.change = function(var.name, var.value, ...) { rcloud.ui.set('#textValueFromHtmltools-result', var.value) }),
 div(id="textValueFromHtmltools-result")) 
 
 ```
@@ -108,19 +108,19 @@ numericNotebookVar <- 10
 
 paramDiv(
 h3("Numeric Parameter with default value from variable"),
-numericParam(numericNotebookVar, min = -19, label = "Notebook variable value", on_change = function(var_name, var_value, ...) { rcloud.ui.set('#numericNotebookVar-result', c(1:var_value)) }),
+numericParam(numericNotebookVar, min = -19, label = "Notebook variable value", on.change = function(var.name, var.value, ...) { rcloud.ui.set('#numericNotebookVar-result', c(1:var.value)) }),
 div(id="numericNotebookVar-result")
 )
 
 paramDiv(
 h3("Numeric Parameter with no variable"),
-numericParam(numericNoVar, min = -19, label = "Numeric value", on_change = function(var_name, var_value, ...) { rcloud.ui.set('#numericNoVar-result', c(1:var_value)) }),
+numericParam(numericNoVar, min = -19, label = "Numeric value", on.change = function(var.name, var.value, ...) { rcloud.ui.set('#numericNoVar-result', c(1:var.value)) }),
 div(id="numericNoVar-result")
 )
 
 paramDiv(
 h3("Numeric Parameter with default value specified using htmltools tag"),
-numericParam(numericValueFromHtmltools, value = 12, min = -19, label = "Numeric value", on_change = function(var_name, var_value, ...) { rcloud.ui.set('#numericValueFromHtmltools-result', c(1:var_value)) }),
+numericParam(numericValueFromHtmltools, value = 12, min = -19, label = "Numeric value", on.change = function(var.name, var.value, ...) { rcloud.ui.set('#numericValueFromHtmltools-result', c(1:var.value)) }),
 div(id="numericValueFromHtmltools-result"))
 ```
 
@@ -133,19 +133,19 @@ numericSliderNotebookVar <- 10
 
 paramDiv(
 h3("Numeric with default value from variable"),
-numericSliderParam(numericSliderNotebookVar, min = -19, max = 25, label = "Numeric value", on_change = function(var_name, var_value, ...) { rcloud.ui.set('#numericSliderNotebookVar-result', c(1:var_value)) }),
+numericSliderParam(numericSliderNotebookVar, min = -19, max = 25, label = "Numeric value", on.change = function(var.name, var.value, ...) { rcloud.ui.set('#numericSliderNotebookVar-result', c(1:var.value)) }),
 div(id="numericSliderNotebookVar-result")
 )
 
 paramDiv(
 h3("Numeric with no variable"),
-numericSliderParam(numericSliderNoVar, min = -19, max = 25, label = "Numeric value", on_change = function(var_name, var_value, ...) { rcloud.ui.set('#numericSliderNoVar-result', c(1:var_value)) }),
+numericSliderParam(numericSliderNoVar, min = -19, max = 25, label = "Numeric value", on.change = function(var.name, var.value, ...) { rcloud.ui.set('#numericSliderNoVar-result', c(1:var.value)) }),
 div(id="numericSliderNoVar-result")
 )
 
 paramDiv(
 h3("Numeric with default value specified using htmltools tag"),
-numericSliderParam(numericSliderValueFromHtmltools, value = 12, min = -19, max = 25, label = "Numeric value", on_change = function(var_name, var_value, ...) { rcloud.ui.set('#numericSliderValueFromHtmltools-result', c(1:var_value)) }),
+numericSliderParam(numericSliderValueFromHtmltools, value = 12, min = -19, max = 25, label = "Numeric value", on.change = function(var.name, var.value, ...) { rcloud.ui.set('#numericSliderValueFromHtmltools-result', c(1:var.value)) }),
 div(id="numericSliderValueFromHtmltools-result"))
 ```
 
@@ -160,23 +160,23 @@ selectVar <- 2
 paramDiv(
 h3("Select with default value from variable"),
 selectParam(selectVar, label = "Select value", choices = list('1' = "first", '2' = "second", '3' = "third"), 
-    on_change = function(var_name, var_value, ...) { rcloud.ui.set('#selectVar-result', var_value) }),
+    on.change = function(var.name, var.value, ...) { rcloud.ui.set('#selectVar-result', var.value) }),
 div(id="selectVar-result")
 )
 
 paramDiv(
 h3("Select with no variable"),
 selectParam(selectNoVar, label = "Select value", choices = list('1' = "first", '2' = "second", '3' = "third"), 
-    on_change = function(var_name, var_value, ...) { 
-    rcloud.ui.set('#selectNoVar-result', var_value) }),
+    on.change = function(var.name, var.value, ...) { 
+    rcloud.ui.set('#selectNoVar-result', var.value) }),
 div(id="selectNoVar-result")
 )
 
 paramDiv(
 h3("Select with default value specified using htmltools tag"),
 selectParam(selectValueFromHtmltools, value = 3, label = "Select value", choices = list('1' = "first", '2' = "second", '3' = "third"), 
-    on_change = function(var_name, var_value, ...) { 
-    rcloud.ui.set('#selectValueFromHtmltools-result', var_value) }),
+    on.change = function(var.name, var.value, ...) { 
+    rcloud.ui.set('#selectValueFromHtmltools-result', var.value) }),
 div(id="selectValueFromHtmltools-result"))
 ```
 
@@ -190,23 +190,23 @@ multiSelectVar <- c(2,3)
 paramDiv(
 h3("Select with default value from variable"),
 selectParam(multiSelectVar, label = "Select value", multiple = NA, choices = list('1' = "first", '2' = "second", '3' = "third"), 
-    on_change = function(var_name, var_value, ...) { rcloud.ui.set('#multiSelectVar-result', var_value) }),
+    on.change = function(var.name, var.value, ...) { rcloud.ui.set('#multiSelectVar-result', var.value) }),
 div(id="multiSelectVar-result")
 )
 
 paramDiv(
 h3("Select with no variable"),
 selectParam(multiSelectNoVar, label = "Select value", multiple = NA, choices = list('1' = "first", '2' = "second", '3' = "third"), 
-    on_change = function(var_name, var_value, ...) { 
-    rcloud.ui.set('#multiSelectNoVar-result', var_value) }),
+    on.change = function(var.name, var.value, ...) { 
+    rcloud.ui.set('#multiSelectNoVar-result', var.value) }),
 div(id="multiSelectNoVar-result")
 )
 
 paramDiv(
 h3("Select with default value specified using htmltools tag"),
 selectParam(multiSelectValueFromHtmltools, value = 3, label = "Select value", multiple = NA, choices = list('1' = "first", '2' = "second", '3' = "third"), 
-    on_change = function(var_name, var_value, ...) { 
-    rcloud.ui.set('#multiSelectValueFromHtmltools-result', var_value) }),
+    on.change = function(var.name, var.value, ...) { 
+    rcloud.ui.set('#multiSelectValueFromHtmltools-result', var.value) }),
 div(id="multiSelectValueFromHtmltools-result"))
 ```
 
@@ -220,23 +220,23 @@ logicalVar <- TRUE
 paramDiv(
 h3("Checkbox with default value from variable"),
 logicalParam(logicalVar, label = "Selected?", 
-    on_change = function(var_name, var_value, ...) { rcloud.ui.set('#logicalVar-result', var_value) }),
+    on.change = function(var.name, var.value, ...) { rcloud.ui.set('#logicalVar-result', var.value) }),
 div(id="logicalVar-result")
 )
 
 paramDiv(
 h3("Checkbox with no variable"),
 logicalParam(logicalNoVar, label = "Selected?",
-    on_change = function(var_name, var_value, ...) { 
-    rcloud.ui.set('#logicalNoVar-result', var_value) }),
+    on.change = function(var.name, var.value, ...) { 
+    rcloud.ui.set('#logicalNoVar-result', var.value) }),
 div(id="logicalNoVar-result")
 )
 
 paramDiv(
 h3("Checkbox with default value specified using htmltools tag"),
 logicalParam(logicalValueFromHtmltools, checked = TRUE, label = "Selected?", 
-    on_change = function(var_name, var_value, ...) { 
-    rcloud.ui.set('#logicalValueFromHtmltools-result', var_value) }),
+    on.change = function(var.name, var.value, ...) { 
+    rcloud.ui.set('#logicalValueFromHtmltools-result', var.value) }),
 div(id="logicalValueFromHtmltools-result"))
 ```
 
@@ -250,19 +250,19 @@ dateVar <- Sys.Date()
 
 paramDiv(
 h3("Date with default value from variable"),
-dateParam(dateVar, label = "Date value", on_change = function(var_name, var_value, ...) { rcloud.ui.set('#dateVar-result', var_value) }),
+dateParam(dateVar, label = "Date value", on.change = function(var.name, var.value, ...) { rcloud.ui.set('#dateVar-result', var.value) }),
 div(id="dateVar-result")
 )
 
 paramDiv(
 h3("Date with no variable"),
-dateParam(dateNoVar, label = "Date value", on_change = function(var_name, var_value, ...) { rcloud.ui.set('#dateNoVar-result', var_value) }),
+dateParam(dateNoVar, label = "Date value", on.change = function(var.name, var.value, ...) { rcloud.ui.set('#dateNoVar-result', var.value) }),
 div(id="dateNoVar-result")
 )
 
 paramDiv(
 h3("Date with default value specified using htmltools tag"),
-dateParam(dateValueFromHtmltools, value = '2017-08-30', label = "Date value", on_change = function(var_name, var_value, ...) { rcloud.ui.set('#dateValueFromHtmltools-result', var_value) }),
+dateParam(dateValueFromHtmltools, value = '2017-08-30', label = "Date value", on.change = function(var.name, var.value, ...) { rcloud.ui.set('#dateValueFromHtmltools-result', var.value) }),
 div(id="dateValueFromHtmltools-result"))
 ```
 
@@ -277,23 +277,23 @@ choiceVar <- 2
 paramDiv(
 h3("Choice with default value from variable"),
 choiceParam(choiceVar, label = "Select value", choices = list('1' = "first", '2' = "second", '3' = "third"), 
-    on_change = function(var_name, var_value, ...) { rcloud.ui.set('#choiceVar-result', var_value) }),
+    on.change = function(var.name, var.value, ...) { rcloud.ui.set('#choiceVar-result', var.value) }),
 div(id="choiceVar-result")
 )
 
 paramDiv(
 h3("Choice with no variable"),
 choiceParam(choiceNoVar, label = "Select value", choices = list('1' = "first", '2' = "second", '3' = "third"), 
-    on_change = function(var_name, var_value, ...) { 
-    rcloud.ui.set('#choiceNoVar-result', var_value) }),
+    on.change = function(var.name, var.value, ...) { 
+    rcloud.ui.set('#choiceNoVar-result', var.value) }),
 div(id="choiceNoVar-result")
 )
 
 paramDiv(
 h3("Select with default value specified using htmltools tag"),
 choiceParam(choiceValueFromHtmltools, value = 3, label = "Select value", choices = list('1' = "first", '2' = "second", '3' = "third"), 
-    on_change = function(var_name, var_value, ...) { 
-    rcloud.ui.set('#choiceValueFromHtmltools-result', var_value) }),
+    on.change = function(var.name, var.value, ...) { 
+    rcloud.ui.set('#choiceValueFromHtmltools-result', var.value) }),
 div(id="choiceValueFromHtmltools-result"))
 ```
 
@@ -306,11 +306,11 @@ paramDiv(h1('Action buttons'))
 paramDiv(
 h3("Execute two actions on click"),
 buttonParam(value = "Execute",
-    on_click = list(
-        function(var_name, var_value, ...) { 
-            rcloud.ui.set('#action-result', var_name) 
+    on.click = list(
+        function(var.name, var.value, ...) { 
+            rcloud.ui.set('#action-result', var.name) 
             }, 
-        function(var_name, var_value, ...) { 
+        function(var.name, var.value, ...) { 
             rcloud.ui.set('#action-result2', c(1:10)) }
         )
         ),
@@ -327,19 +327,19 @@ div(id="action-result2")
 ```{r}
 
 z <- 10
-text_param = "Default text"
+textVar = "Default text"
 paramSet(div(
     numericParam(z, min = -19, label = "Z value"),
     selectParam(select, 'Select value', 
         choices = list('1' = "first", '2' = "second")), 
     choiceParam(choice, 'Select value', multiple='multiple', 
         choices = list('1' = "first", '2' = "second")),
-    numericSliderParam(the_range, min = 1, max = 100, label = "Select value"),
+    numericSliderParam(rangeVar, min = 1, max = 100, label = "Select value"),
     logicalParam(chck, 'Yes?', required = FALSE),
-    dateParam(my_date, 'Date'),
-    textParam(text_param, label = "Text value"),
+    dateParam(dateVar, 'Date'),
+    textParam(textVar, label = "Text value"),
     submitParam(name='submit1')
-    ), on_submit = function(form_name, values, ...) {
+    ), on.submit = function(form.name, values, ...) {
      rcloud.ui.set('#result-div', values)   
     }
 )
@@ -361,7 +361,7 @@ paramSet(
 numericParam(fromVar, min = 0, label = "From value"),
 numericParam(toVar, min = 0, label = "To value"),
 submitParam(),
-    on_submit = function(var_name, var_value, ...) {
+    on.submit = function(var.name, var.value, ...) {
       rcloud.run.cells.from(2)  
     }
 )
@@ -382,12 +382,12 @@ paramDiv(h1('Reactive form'))
 
 fromVar <- 10
 
-paramSet(wait_if_invalid=FALSE, name='my-form',
+paramSet(wait.if.invalid=FALSE, name='my-form',
 numericParam(fromVar, min = 0, label = "From value"),
 numericParam(toVar, min = 0, label = "To value"),
 submitParam(),
-    on_submit = function(var_name, var_value, ...) {
-      my_function(fromVar, toVar)
+    on.submit = function(var.name, var.value, ...) {
+      myFunction(fromVar, toVar)
     }
 )
 ```
@@ -396,7 +396,7 @@ submitParam(),
 ```{r}
 # Some content used by form callback function
 
-my_function <- function(from, to) {
+myFunction <- function(from, to) {
     rcloud.ui.plot('#result-div', function() { plot(c(from:to))})
     rcloud.run.cell(4)
 }
@@ -427,19 +427,19 @@ The following code displays a parameters form which blocks notebook execution un
 ```{r}
 
 z <- 10
-text_param = "Default text"
+textVar = "Default text"
 synchronousParamSet(div(
     numericParam(z, min = -19, label = "Z value"),
     selectParam(select, 'Select value', 
         choices = list('1' = "first", '2' = "second")), 
     choiceParam(choice, 'Select value', multiple='multiple', 
         choices = list('1' = "first", '2' = "second")),
-    numericSliderParam(the_range, min = 1, max = 100, label = "Select value"),
+    numericSliderParam(rangeVar, min = 1, max = 100, label = "Select value"),
     logicalParam(chck, 'Yes?'),
-    dateParam(my_date, 'Date'),
-    textParam(text_param, label = "Text value"),
+    dateParam(dateVar, 'Date'),
+    textParam(textVar, label = "Text value"),
     submitParam(name='submit1')
-    ), on_submit = function(form_name, values, ...) {
+    ), on.submit = function(form.name, values, ...) {
      print(values)   
     }
 )
@@ -447,9 +447,9 @@ synchronousParamSet(div(
 z
 select
 choice
-the_range
+rangeVar
 chck
-my_date
-text_param
+dateVar
+textVar
 
 ```
