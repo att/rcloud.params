@@ -447,11 +447,10 @@
   tagValue
 }
 
-
 .addCallback <- function(param, type, FUN = NULL) {
   if(!is.null(FUN)) {
     if(!exists(param, envir = .params)) {
-      stop(paste0("Parameter '" +  param + "' does not exist."))
+      stop(paste0("Parameter '", param, "' does not exist."))
     }
     control <- get(param, envir = .params)
     control$callbacks[[type]] <- c(control$callbacks[[type]], FUN)
@@ -459,11 +458,10 @@
   }
 }
 
-
 .removeCallbacks <- function(param, type) {
   if(type %in% EVENT_TYPES) {
     if(!exists(param, envir = .params)) {
-      stop(paste0("Parameter '" +  param + "' does not exist."))
+      stop(paste0("Parameter '",  param , "' does not exist."))
     }
     control <- get(param, envir = .params)
     control$callbacks[[type]] <- list()
@@ -473,7 +471,7 @@
 
 .processCallbackFunctions <- function(params.in) {
   callbacks <- list()
-  callbacksIn <- list();
+  callbacksIn <- list()
   if ('callbacks' %in% names(params.in)) {
     callbacksIn <- params.in$callbacks
   }
@@ -512,8 +510,8 @@
 
 .removeCallbacksFromParams <- function(params.in) {
   params.in$callbacks <- NULL
-  params.in$on.submit <- NULL
-  params.in$on.change <- NULL
-  params.in$on.click <- NULL
+  for(eventType in EVENT_TYPES) {
+    params.in[[paste0('on.',eventType)]] <- NULL
+  }
   params.in
 }

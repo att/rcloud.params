@@ -142,8 +142,8 @@ print.rcloud.params.param.set <- function(x, ..., view = interactive()) {
           }
         })
         
-        if (!is.null(x$on.submit) && is.function(x$on.submit)) {
-          x$on.submit(x$name, controlValues)
+        if (!is.null(x$callbacks$submit) && is.list(x$callbacks$submit) && length(x$callbacks$submit) > 0 && is.function(x$callbacks$submit[[1]])) {
+          do.call(x$callbacks$submit[[1]], list(x$name, controlValues))
         }
       }
     }
@@ -183,6 +183,7 @@ paramDiv <- function(...) {
 #' 
 #' @param ... child elements (shiny.tags)
 #' @param on.submit callback function to invoke when form is submitted
+#' @param on.change callback function to invoke on each parameter of the param set change
 #' @param name of the form
 #' @param wait.if.invalid should notebook execution be stopped if parameter values are invalid
 #' @param hide.source should the source of the cell displaying the form be hidden
@@ -191,9 +192,6 @@ paramDiv <- function(...) {
 #' 
 #' @export 
 paramSet <- function(..., 
-                     on.submit = function(form.name, variables, ...) {
-                       
-                     }, 
                      name = paste0("form_", as.integer(runif(1)*1e6)), 
                      wait.if.invalid = TRUE, 
                      hide.source = FALSE) {
@@ -234,7 +232,7 @@ paramSet <- function(...,
     if ('shiny.tag' %in% class(par)) {
       parName <- par$attribs[[.rcloudParamsAttr('name')]]
       if (!is.null(parName)) {
-        for (event in EVENT_TYPES) {
+        for (event in c('click','change')) {
           lapply(callbacks[event], function(c) {
             .addCallback(parName, event, c)
           })
@@ -252,6 +250,7 @@ paramSet <- function(...,
 #' 
 #' @param ... child elements (shiny.tags)
 #' @param on.submit callback function that should be invoked when form gets submitted
+#' @param on.change callback function to invoke on each parameter of the param set change
 #' @param name of the form
 #' @param wait.if.invalid should notebook execution be blocked if parameter values are invalid
 #' @param hide.source should the source of the cell displaying the form be hidden
@@ -260,7 +259,6 @@ paramSet <- function(...,
 #' 
 #' @export 
 synchronousParamSet <- function(...,
-                                on.submit = function(form.name, values, ...) {},
                                 name = paste0("form_", as.integer(runif(1)*1e6)), 
                                 wait.if.invalid = TRUE, 
                                 hide.source = FALSE) {
@@ -284,7 +282,6 @@ synchronousParamSet <- function(...,
   paramSetDescriptor <- structure(list(name = name, 
                                          content = content, 
                                          callbacks = callbacks, 
-                                         onSubmit = on.submit, 
                                          reactive = FALSE, 
                                          waitIfInvalid = wait.if.invalid,
                                          hideSource = hide.source
@@ -321,6 +318,7 @@ submitParam <-
                      .uiToRValueMapper('logical'),
                      inputTag
       )
+    .registerControl(controlDescriptor)
     
     return(controlDescriptor$controlTag)
   }
