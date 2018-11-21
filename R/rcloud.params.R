@@ -405,6 +405,7 @@ buttonParam <-
            label = NULL,
            min = NA,
            max = NA,
+           empty.value.handler = .erroringEmptyValueHandler,
            ...) {
     .numericParam(name,
                  label,
@@ -412,6 +413,7 @@ buttonParam <-
                  max,
                  type = 'range',
                  class = 'form-control slider',
+                 empty.value.handler = empty.value.handler,
                  ...)
   }
 #'
@@ -459,12 +461,8 @@ buttonParam <-
            },
            tag.value.extractor = .getValueFromTagAttribute,
            qs.value.extractor = .getMultiValueFromQueryParameter,
-           null.value.provider = function(value) {
-             if (is.null(value) || any(is.na(value))) {
-               c()
-             } else {
-               value
-             }
+           empty.value.handler = function(var, val) {
+             c()
            },
            r.to.tag.value.mapper = .rToUIControlSelectValueMapper(choices),
            ...) {
@@ -475,7 +473,7 @@ buttonParam <-
       tag.factory = tag.factory,
       tag.value.extractor = tag.value.extractor,
       qs.value.extractor = qs.value.extractor,
-      null.value.provider = null.value.provider,
+      empty.value.handler = empty.value.handler,
       r.to.tag.value.mapper = r.to.tag.value.mapper,
       ...
     )
@@ -508,6 +506,7 @@ buttonParam <-
 
 #'
 #' Creates checkbox input control
+#' 
 #'
 .logicalParam <-
   function(name,
@@ -516,6 +515,7 @@ buttonParam <-
            tag.factory = function(...) {
              tags$input(type = 'checkbox', class = "checkbox", ...)
            },
+           empty.value.handler = .erroringEmptyValueHandler,
            tag.value.extractor = function(inputTag) {
              tagValue <- NULL
              if ('checked' %in% names(inputTag$attribs)) {
@@ -530,13 +530,6 @@ buttonParam <-
              }
              tagValue
            },
-           null.value.provider = function(value) {
-             if (is.null(value) || is.na(value)) {
-               FALSE
-             } else {
-               value
-             }
-           },
            r.to.tag.value.mapper = .rToUIControlCheckboxValueMapper(),
            ...) {
     .paramFactory(
@@ -544,8 +537,8 @@ buttonParam <-
       label,
       r.class = r.class,
       tag.factory = tag.factory,
+      empty.value.handler = empty.value.handler,
       tag.value.extractor = tag.value.extractor,
-      null.value.provider = null.value.provider,
       r.to.tag.value.mapper = r.to.tag.value.mapper,
       ...
     )

@@ -9,8 +9,7 @@
   tag("select", list(...)) },
   tag.value.extractor = .getValueFromTagAttribute,
   qs.value.extractor = .getMultiValueFromQueryParameter,
-  null.value.provider = function(value) {     if (is.null(value) ||
-  any(is.na(value))) {         c()     }     else {         value     } },
+  empty.value.handler = function(var, val) {     c() },
   r.to.tag.value.mapper = .rToUIControlSelectValueMapper(choices), ...)
 }
 \description{

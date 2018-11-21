@@ -4,8 +4,8 @@ frontend <- NULL
 .options <- new.env()
 .query.params <- new.env()
 
-DEBUG_OPTION <- 'DEBUG'
-QUERY_PARAMS <- 'QUERY_PARAMS'
+DEBUG_OPTION <- 'debug'
+QUERY_PARAMS <- 'query.params'
 
 EVENT_TYPES <- c('change', 'click', 'submit')
 
@@ -41,4 +41,3 @@ EVENT_TYPES <- c('change', 'click', 'submit')
 .isDebugEnabled <- function() {
   return(get(DEBUG_OPTION, envir = .options))
 }
-

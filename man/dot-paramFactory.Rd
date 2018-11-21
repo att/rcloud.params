@@ -8,8 +8,7 @@
   tag.factory = function(...) {     do.call("tag", ...) },
   tag.value.extractor = .getValueFromTagAttribute,
   qs.value.extractor = .getSingleValueFromQueryParameter,
-  null.value.provider = function(value) {     if (is.null(value) ||
-  any(is.na(value))) {         ""     }     else {         value     } },
+  empty.value.handler = .emptyStringEmptyValueHandler,
   r.to.tag.value.mapper = .rToUIControlDefaultValueMapper(.rToUIValueMapper(r.class)),
   ui.to.r.value.mapper = .uiToRValueMapper(r.class), ...)
 }
@@ -28,7 +27,8 @@
 
 \item{qs.value.extractor}{a function that extracts value from a query string}
 
-\item{null.value.provider}{a function that returns a value that should be used if default, query string nor shiny.tag specify a value}
+\item{empty.value.handler}{a function that handles case when the value is empty (if default, query string nor shiny.tag specify a value), 
+it allows for mapping an empty value to control value (e.g. NULL to empty selection in case of select input)}
 
 \item{r.to.tag.value.mapper}{a mapper that converts R value to a value accepted by shiny.tag}
 

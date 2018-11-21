@@ -6,15 +6,14 @@
 \usage{
 .logicalParam(name, label = NULL, r.class = "logical",
   tag.factory = function(...) {     tags$input(type = "checkbox", class =
-  "checkbox", ...) }, tag.value.extractor = function(inputTag) {    
-  tagValue <- NULL     if ("checked" \%in\% names(inputTag$attribs)) {     
-     if (!is.null(inputTag$attribs$checked) &&
+  "checkbox", ...) }, empty.value.handler = .erroringEmptyValueHandler,
+  tag.value.extractor = function(inputTag) {     tagValue <- NULL     if
+  ("checked" \%in\% names(inputTag$attribs)) {         if
+  (!is.null(inputTag$attribs$checked) &&
   !any(is.na(inputTag$attribs$checked))) {             tagValue <- if
   (is.logical(inputTag$attribs$checked)) {                
   inputTag$attribs$checked             }             else {                
   TRUE             }         }     }     tagValue },
-  null.value.provider = function(value) {     if (is.null(value) ||
-  is.na(value)) {         FALSE     }     else {         value     } },
   r.to.tag.value.mapper = .rToUIControlCheckboxValueMapper(), ...)
 }
 \description{

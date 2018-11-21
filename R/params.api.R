@@ -13,7 +13,8 @@
 #' @param tag.factory the function returning form input shiny.tags
 #' @param tag.value.extractor a function that extracts value specified via shiny.tag attributes
 #' @param qs.value.extractor a function that extracts value from a query string
-#' @param null.value.provider a function that returns a value that should be used if default, query string nor shiny.tag specify a value
+#' @param empty.value.handler a function that handles case when the value is empty (if default, query string nor shiny.tag specify a value), 
+#'                            it allows for mapping an empty value to control value (e.g. NULL to empty selection in case of select input)
 #' @param r.to.tag.value.mapper a mapper that converts R value to a value accepted by shiny.tag
 #' @param ui.to.r.value.mapper a mapper that converts UI value to an R value
 #' @param ... parameters passed to shiny.tag, if 'callbacks' list is among them, it is removed before it is passed to tag.factory
@@ -25,13 +26,7 @@
                           }, 
                           tag.value.extractor = .getValueFromTagAttribute, 
                           qs.value.extractor = .getSingleValueFromQueryParameter, 
-                          null.value.provider = function(value) {
-                            if(is.null(value) || any(is.na(value))) {
-                              ''
-                            } else {
-                              value
-                            }
-                          }, 
+                          empty.value.handler = .emptyStringEmptyValueHandler, 
                           r.to.tag.value.mapper = .rToUIControlDefaultValueMapper(.rToUIValueMapper(r.class)),
                           ui.to.r.value.mapper = .uiToRValueMapper(r.class),
                           ...) {
@@ -52,7 +47,6 @@
     }
   }
   
-  
   ui.log.debug("Params for tag factory: ", paramsIn)
   inputTag <- do.call('tag.factory', paramsIn)
   
@@ -64,10 +58,12 @@
   
   value <- .selectValue(qsValue, tagValue, defaultValue)
   
-  value <- null.value.provider(value)
-  
-  if (length(value) > 0) {
+  if (length(value) > 0 && !any(is.na(value))) {
     assign(var, value, envir=globalenv())
+  }
+  
+  if (is.null(value) || any(is.na(value))) {
+    value <- empty.value.handler(var, value)
   }
   
   ui.log.debug("Parameter - ", paste0("Var: ", var, ", Par name: ", query,
@@ -247,25 +243,26 @@
   }
 }
 
+.isNotEmpty <- function(val) {
+  !is.null(val) && !is.na(val) && length(val) > 0 && !any(is.na(val)) && val != ''
+}
+
+.asCharacterMapper <- function(val) {
+  if (.isNotEmpty(val)) {
+    tryCatch(as.character(val), error = function(e) {
+      NULL
+    })
+  } else {
+    NULL
+  }
+}
+
 .uiToRValueMapper <- function(r.class) {
   
-  isNotEmpty <- function(val) {
-    !is.null(val) && !any(is.na(val)) && val != ''
-  }
-  asCharacterMapper <- function(val) {
-    if (isNotEmpty(val)) {
-      tryCatch(as.character(val), error = function(e) {
-        NULL
-      })
-    } else {
-      NULL
-    }
-  }
-  
   switch(r.class, 
-         'character' = asCharacterMapper,
+         'character' = .asCharacterMapper,
          'Date' = function(val) {
-           if(isNotEmpty(val)) {
+           if(.isNotEmpty(val)) {
              tryCatch(as.Date(val), error = function(e) {
                NULL
              })
@@ -274,7 +271,7 @@
            }
          },
          'numeric' = function(val) {
-           if(isNotEmpty(val)) {
+           if(.isNotEmpty(val)) {
              tryCatch(as.numeric(val), error = function(e) {
                NULL
              })
@@ -283,7 +280,7 @@
            }
          }, 
          'logical' = function(val) {
-           if(isNotEmpty(val)) {
+           if(.isNotEmpty(val)) {
              tryCatch(as.logical(val), error = function(e) {
                NULL
              })
@@ -291,7 +288,7 @@
              NULL
            }
          }, 
-         asCharacterMapper)
+         .asCharacterMapper)
 }
 
 .rToUIValueMapper <- function(r.class) {
@@ -445,6 +442,14 @@
     }
   }
   tagValue
+}
+
+.erroringEmptyValueHandler <- function(var, value) {
+  stop(paste0("The value for variable ", var, " is empty."))
+}
+
+.emptyStringEmptyValueHandler <- function(var, value) {
+  ''
 }
 
 .addCallback <- function(param, type, FUN = NULL) {

@@ -125,6 +125,7 @@ div(id="numericValueFromHtmltools-result"))
 ```
 
 ## Slider Input
+
 ```{r}
 
 paramDiv(h1('Numeric slider input'))
@@ -138,17 +139,21 @@ div(id="numericSliderNotebookVar-result")
 )
 
 paramDiv(
-h3("Numeric with no variable"),
-numericSliderParam(numericSliderNoVar, min = -19, max = 25, label = "Numeric value", on.change = function(var.name, var.value, ...) { rcloud.ui.set('#numericSliderNoVar-result', c(1:var.value)) }),
-div(id="numericSliderNoVar-result")
-)
-
-paramDiv(
 h3("Numeric with default value specified using htmltools tag"),
 numericSliderParam(numericSliderValueFromHtmltools, value = 12, min = -19, max = 25, label = "Numeric value", on.change = function(var.name, var.value, ...) { rcloud.ui.set('#numericSliderValueFromHtmltools-result', c(1:var.value)) }),
 div(id="numericSliderValueFromHtmltools-result"))
 ```
 
+> Note, for slider and checkbox the parameter must have a defined value (via variable or query parameter) (see API Details section). Namely, the following WON'T work:
+
+```{r}
+
+paramDiv(
+h3("Numeric with no variable"),
+numericSliderParam(numericSliderNoVar, min = -19, max = 25, label = "Numeric value", on.change = function(var.name, var.value, ...) { rcloud.ui.set('#numericSliderNoVar-result', c(1:var.value)) }),
+div(id="numericSliderNoVar-result")
+)
+```
 
 ## Single Select
 ```{r}
@@ -225,6 +230,18 @@ div(id="logicalVar-result")
 )
 
 paramDiv(
+h3("Checkbox with default value specified using htmltools tag"),
+logicalParam(logicalValueFromHtmltools, checked = TRUE, label = "Selected?", 
+    on.change = function(var.name, var.value, ...) { 
+    rcloud.ui.set('#logicalValueFromHtmltools-result', var.value) }),
+div(id="logicalValueFromHtmltools-result"))
+```
+
+> Note, for slider and checkbox the parameter must have a defined value (via variable or query parameter) (see API Details section). Namely, the following WON'T work:
+
+```{r}
+
+paramDiv(
 h3("Checkbox with no variable"),
 logicalParam(logicalNoVar, label = "Selected?",
     on.change = function(var.name, var.value, ...) { 
@@ -232,12 +249,6 @@ logicalParam(logicalNoVar, label = "Selected?",
 div(id="logicalNoVar-result")
 )
 
-paramDiv(
-h3("Checkbox with default value specified using htmltools tag"),
-logicalParam(logicalValueFromHtmltools, checked = TRUE, label = "Selected?", 
-    on.change = function(var.name, var.value, ...) { 
-    rcloud.ui.set('#logicalValueFromHtmltools-result', var.value) }),
-div(id="logicalValueFromHtmltools-result"))
 ```
 
 ## Date Input
@@ -327,7 +338,8 @@ div(id="action-result2")
 ```{r}
 
 z <- 10
-textVar = "Default text"
+textVar <- "Default text"
+rangeVar <- 13
 paramSet(div(
     numericParam(z, min = -19, label = "Z value"),
     selectParam(select, 'Select value', 
@@ -481,12 +493,14 @@ plot(c(fromVar:toVar))
 
 The following code displays a parameters form which blocks notebook execution until values for all parameters are provided.
 
-> Note, in case of a blocking form, any registered reactive callback functions on specific controls are disabled.
+> Note, in case of a blocking form, any registered reactive callback functions on specific controls are disabled untill form is successfully submitted.
 
 ```{r}
 
 z <- 10
-textVar = "Default text"
+textVar <- "Default text"
+chck <- FALSE
+rangeVar <- 33
 synchronousParamSet(div(
     numericParam(z, min = -19, label = "Z value"),
     selectParam(select, 'Select value', 
@@ -513,8 +527,16 @@ textVar
 
 ```
 
+# API Details
 
-# Debugging
+## Undefined Value Handling
+
+If value for a parameter is undefined (i.e. the corresponding variable is not initialized, parameter value is not specified with url parameter nor a value is provided as htmltools parameter), the following rules apply:
+* `rcloud.params` will NOT initialize the variable
+* Checkbox and Slider will fail to display, as their initial state represents a specific value which involves implicit mapping of empty value (`NULL`) to a specific value (e.g. a middle of range in case of slider) which leads to invalid state
+
+
+## Debugging
 
 ## Logging
 

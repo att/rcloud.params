@@ -108,7 +108,7 @@
       if (value !== undefined && value !== null && value !== '' && !_.isEqual(value, defaultValue) && value != defaultValue) {
           _varmap[key] = value;
       } else {
-          delete _varmap[key];
+          _varmap[key] = undefined;
       }
       url_utils.updateHistory(_varmap, {baseUrl: url_utils.getBase(), segments: url_utils.getPathSegments() });
     }
