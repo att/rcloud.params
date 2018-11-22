@@ -23,15 +23,6 @@ Functions allowing for modifying HTML elements in RCloud UI.
 * `rcloud.ui.prepend` - prepends content to specified HTML element
 * `compact` - a helper function ensuring that shiny.tag is not displayed in an iframe
 
-# Notebook Execution R Functions
-
-Functions controlling the execution of notebook cells.
-
-* `rcloud.run.cell` - runs a specified cell 
-* `rcloud.run.cells` - runs a specified cells
-* `rcloud.run.cells.from` - runs cells starting from the given cell
-* `rcloud.stop.execution` - gracefully (by allowing current cell execution to complete) stops execution of notebook cells 
-
 
 # Reactive Controls Examples
 

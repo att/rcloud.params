@@ -53,28 +53,6 @@ rcloud.ui.plot <- function(selector, plot.fun, width = 300, height = 300) {
   frontend$setDiv(Rserve.context(), selector, .html.in(wp1))
 }
 
-#' Run cell with given id
-#' 
-#' @export
-rcloud.run.cell <- function(cell.id) {
-  frontend$runCell(cell.id)
-}
-
-#' Run cells with given ids
-#' 
-#' @export
-rcloud.run.cells <- function(cell.ids) {
-  frontend$runCells(cell.ids)
-}
-
-#' Run all cells starting from the given cell id
-#' 
-#' @export
-rcloud.run.cells.from <- function(cell.id) {
-  frontend$runCellsFrom(cell.id)
-}
-
-
 #' Hide cell source
 #' 
 #' @export
@@ -107,13 +85,6 @@ validateForm <- function(form.id) {
 #' @export
 waitForSynchronousForm <- function(form.id) {
   frontend$waitForForm(Rserve.context(), form.id)
-}
-
-#' Gracefully stops execution of a notebook by allowing current cell to complete
-#' 
-#' @export
-rcloud.stop.execution <- function() {
-  frontend$stopExecution()
 }
 
 #' Enable debug messages

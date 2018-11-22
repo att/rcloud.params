@@ -12,7 +12,7 @@ paramSet(..., name = paste0("form_", as.integer(runif(1) * 1e+06)),
 
 \item{name}{of the form}
 
-\item{wait.if.invalid}{should notebook execution be stopped if parameter values are invalid}
+\item{wait.if.invalid}{should notebook execution be stopped if parameter values are invalid, if `true` and `on.submit` function is not provided, an error will be produced if form is invalid}
 
 \item{hide.source}{should the source of the cell displaying the form be hidden}
 

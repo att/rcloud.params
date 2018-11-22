@@ -7,5 +7,12 @@
 \method{print}{rcloud.params.param.set}(x, ..., view = interactive())
 }
 \description{
-Prints a param set form
+Param set can have two modes:
+* reactive - it doesn't perform busy wait, it halts notebook execution and passes control over execution to JS.
+* synchronous (blocking) - it performs busy wait, and R keeps control over the execution process.
+}
+\details{
+Whether to wait or not for a form is controlled by `waitIfInvalid` logical property of the `paramSet`. 
+In case of reactive form, if the flag is set to `true` (default) and `on.submit` callback
+is not defined, the form will be validated and an error produced if the form is invalid.
 }
