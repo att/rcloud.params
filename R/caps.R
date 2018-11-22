@@ -95,6 +95,11 @@ waitForForm <- function(form.id) {
   rcloud.stop.execution()
   frontend$waitForReactiveForm(Rserve.context(), form.id)
 }
+
+#' @export
+validateForm <- function(form.id) {
+  frontend$validateForm(Rserve.context(), form.id)
+}
 #'
 #'  Blocks execution and waits for submission of a form associated with the given group
 #' 

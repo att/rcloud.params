@@ -115,6 +115,14 @@ print.rcloud.params.control <-
 
 
 #' Prints a param set form
+#' 
+#' Param set can have two modes:
+#' * reactive - it doesn't perform busy wait, it halts notebook execution and passes control over execution to JS.
+#' * synchronous (blocking) - it performs busy wait, and R keeps control over the execution process.
+#' 
+#' Whether to wait or not for a form is controlled by `waitIfInvalid` logical property of the `paramSet`. 
+#' In case of reactive form, if the flag is set to `true` (default) and `on.submit` callback
+#' is not defined, the form will be validated and an error produced if the form is invalid.
 #'
 #' @export
 print.rcloud.params.param.set <- function(x, ..., view = interactive()) {
@@ -128,7 +136,15 @@ print.rcloud.params.param.set <- function(x, ..., view = interactive()) {
   
   if (x$waitIfInvalid) {
     if (x$reactive) {
-      waitForForm(x$name)
+      # Only wait reactively if there is a submit event callback, otherwise synchronously validate the form and throw error if it is invalid
+      if (!is.null(x$callbacks$submit) && is.list(x$callbacks$submit) && length(x$callbacks$submit) > 0 && is.function(x$callbacks$submit[[1]])) {
+        waitForForm(x$name)
+      } else {
+        isValid <- validateForm(x$name)
+        if(!isValid) {
+          stop("Parameter values in form are invalid!")
+        }
+      }
     } else {
       controlValues <- waitForSynchronousForm(x$name)
       ui.log.debug("Result", controlValues)
@@ -157,7 +173,6 @@ print.rcloud.params.param.set <- function(x, ..., view = interactive()) {
 #' @return given shiny tag decorated with rcloud-htmlwidgets attribute
 #' 
 #' @export
-
 compact <- function(tag) {
   tag$attribs[.rcloudHtmlwidgetsCompactAttr()] <- TRUE
   tag
@@ -185,7 +200,7 @@ paramDiv <- function(...) {
 #' @param on.submit callback function to invoke when form is submitted
 #' @param on.change callback function to invoke on each parameter of the param set change
 #' @param name of the form
-#' @param wait.if.invalid should notebook execution be stopped if parameter values are invalid
+#' @param wait.if.invalid should notebook execution be stopped if parameter values are invalid, if `true` and `on.submit` function is not provided, an error will be produced if form is invalid
 #' @param hide.source should the source of the cell displaying the form be hidden
 #' 
 #' @return rcloud.params.param.set structure 
@@ -212,6 +227,11 @@ paramSet <- function(...,
 
   content$attribs[.rcloudHtmlwidgetsCompactAttr()] <- TRUE
   content$attribs[.rcloudParamsAttrNamespace()] <- TRUE
+  
+  if (wait.if.invalid && !is.null(callbacks$submit) && is.list(callbacks$submit) && 
+      length(callbacks$submit) > 0 && is.function(callbacks$submit[[1]])) {
+    content$attribs[.rcloudParamsAttr('wait')] <- TRUE
+  }
 
   paramSetDescriptor <- structure(list(name = name, 
                                          content = content, 
@@ -278,6 +298,10 @@ synchronousParamSet <- function(...,
   content = tags$form(name = name, paramsIn)
   content$attribs[.rcloudHtmlwidgetsCompactAttr()] <- TRUE
   content$attribs[.rcloudParamsAttrNamespace()] <- TRUE
+  
+  if (wait.if.invalid) {
+    content$attribs[.rcloudParamsAttr('wait')] <- TRUE
+  }
   
   paramSetDescriptor <- structure(list(name = name, 
                                          content = content, 

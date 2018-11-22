@@ -331,7 +331,7 @@ div(id="action-result2")
 ```
 
 
-# Reactve Form Example
+# Reactve Forms Examples
 
 ## Simple Example
 
@@ -340,6 +340,7 @@ div(id="action-result2")
 z <- 10
 textVar <- "Default text"
 rangeVar <- 13
+logicalVar <- FALSE
 paramSet(div(
     numericParam(z, min = -19, label = "Z value"),
     selectParam(select, 'Select value', 
@@ -347,7 +348,7 @@ paramSet(div(
     choiceParam(choice, 'Select value', multiple='multiple', 
         choices = list('1' = "first", '2' = "second")),
     numericSliderParam(rangeVar, min = 1, max = 100, label = "Select value"),
-    logicalParam(chck, 'Yes?', required = FALSE),
+    logicalParam(logicalVar, 'Yes?', required = FALSE),
     dateParam(dateVar, 'Date'),
     textParam(textVar, label = "Text value"),
     submitParam(name='submit1')
@@ -435,9 +436,40 @@ plot(c(fromVar:toVar))
 
 ### Cell 1
 ```{r}
-paramDiv(h1('Reactive form'))
+paramDiv(h1('Reactive parameter set'))
 
 fromVar <- 10
+toVar <- 3
+
+paramSet(
+numericParam(fromVar, min = 11, label = "From value"),
+numericParam(toVar, min = 0, label = "To value"),
+on.change = function(var_name, var_value, ...) {
+      rcloud.run.cells.from(2)  
+    }
+)
+
+```
+
+### Cell 2
+```{r}
+plot(c(fromVar:toVar))
+
+```
+
+# Reactive Parameter Sets - Missing Variable
+
+## Register Callback Function with Parameter Set
+
+If a `on.submit` callback function is not defined for a paramSet and the form is invalid (due to missing values) an error will be produced.
+
+### Cell 1
+```{r}
+paramDiv(h1('Reactive parameter set'))
+
+fromVar <- 10
+# The following value is missing:
+#toVar <- 3
 
 paramSet(
 numericParam(fromVar, min = 11, label = "From value"),
@@ -466,6 +498,7 @@ plot(c(fromVar:toVar))
 paramDiv(h1('Reactive parameter set'))
 
 fromVar <- 10
+toVar <- 3
 
 paramSet(
 numericParam(fromVar, min = 11, label = "From value"),
@@ -486,8 +519,6 @@ addCallback(toVar,  'change',  myCallback)
 plot(c(fromVar:toVar))
 
 ```
-
-
 
 # Blocking Form Example
 

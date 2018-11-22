@@ -128,7 +128,7 @@
     function validateForm(form) {
       _.forEach(form.find('[data-rcloud-params="TRUE"]'), (el) => {
             let control = $(el);
-            if(control.find('button').length === 0) {
+            if (control.find('button').length === 0) {
                 validateControl(control);
             }
       });
@@ -307,9 +307,8 @@
         },
         
         waitForReactiveForm:  function (context_id, form_id, k) {
-            try {
-                
-                executeInCellResultProcessingLoop(context_id, function(result_div) {
+          try {
+             executeInCellResultProcessingLoop(context_id, function(result_div) {
                   let form = $('form[name="'+ form_id + '"]');
                   if (form.length > 0) {
     
@@ -324,12 +323,12 @@
                   }
                   
               });
-                  } catch (err) {
-                    console.error(err);
-                  } finally {
-                    k();
-                    return true;
-                  }
+            } catch (err) {
+              console.error(err);
+            } finally {
+              k();
+              return true;
+            }
         },
         
         waitForForm: function (context_id, form_id, k) {
@@ -354,6 +353,25 @@
                   }));
               }
               
+          });
+        },
+        
+        validateForm: function (context_id, form_id, k) {
+            executeInCellResultProcessingLoop(context_id, function(result_div) {
+                let form = $('form[name="'+ form_id + '"]');
+                if(form.length > 0) {
+                  
+                  validateForm(form);
+                  let invalidControls = form.find('.has-error');
+                  if (invalidControls.length === 0) {
+                    k(null, true);
+                    return;
+                  } else {
+                    k(null, false);
+                    return;
+                  }
+                }
+                k(null, true);
           });
         },
         
