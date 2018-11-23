@@ -33,7 +33,7 @@
   
   paramsIn <- list(...)
   
-  ui.log.debug("Extra params: ", paramsIn)
+  .ui.log.debug("Extra params: ", paramsIn)
   
   callbacks <- .processCallbackFunctions(paramsIn)
   
@@ -47,7 +47,7 @@
     }
   }
   
-  ui.log.debug("Params for tag factory: ", paramsIn)
+  .ui.log.debug("Params for tag factory: ", paramsIn)
   inputTag <- do.call('tag.factory', paramsIn)
   
   defaultValue <- .getVariableValue(var)
@@ -66,7 +66,7 @@
     value <- empty.value.handler(var, value)
   }
   
-  ui.log.debug("Parameter - ", paste0("Var: ", var, ", Par name: ", query,
+  .ui.log.debug("Parameter - ", paste0("Var: ", var, ", Par name: ", query,
                                       ", Default: ", paste(defaultValue, collapse = ","), 
                                       ", Default type: ", typeof(defaultValue), 
                                       ", Current: ", paste(value, collapse=","), 
@@ -140,7 +140,7 @@
   controlTag$attribs[parNameAttr] = par.name
   
   assignValueCallback <- function(var.name, var.value, ...) {
-    ui.log.debug(var.name, paste0(var.value, collapse = ","), typeof(var.value))
+    .ui.log.debug(var.name, paste0(var.value, collapse = ","), typeof(var.value))
     assign(var.name, var.value, envir=globalenv());
   } # make call back ocap so variable created in js side can be assigned back to R
   
@@ -202,7 +202,7 @@
 .getQueryParams <- function(name) {
   qparams <- get(QUERY_PARAMS, envir = .query.params)
   qsValue <- qparams[[name]]
-  ui.log.debug('QS value:', qsValue)
+  .ui.log.debug('QS value:', qsValue)
   qsValue
 }
 

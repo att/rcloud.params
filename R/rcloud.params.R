@@ -109,7 +109,7 @@ removeCallbacks.default <- function(object, type) {
 #' @export
 print.rcloud.params.control <-
   function(x, ..., view = interactive()) {
-    ui.log.debug("Printing widget: ", x$id)
+    .ui.log.debug("Printing widget: ", x$id)
     rcloud.html.out(as.character(x$controlTag, rcloud_htmlwidgets_print = FALSE))
   }
 
@@ -147,7 +147,7 @@ print.rcloud.params.param.set <- function(x, ..., view = interactive()) {
       }
     } else {
       controlValues <- waitForSynchronousForm(x$name)
-      ui.log.debug("Result", controlValues)
+      .ui.log.debug("Result", controlValues)
       if (!is.null(controlValues)) {
         
         lapply(controlValues, function(el) {
@@ -327,7 +327,7 @@ submitParam <-
            ...) {
     paramsIn <- list(...)
     
-    ui.log.debug("Extra params: ", paramsIn)
+    .ui.log.debug("Extra params: ", paramsIn)
     
     inputTag <-
       tags$button(value,
@@ -358,7 +358,7 @@ buttonParam <-
            ...) {
     paramsIn <- list(...)
     
-    ui.log.debug("Extra params: ", paramsIn)
+    .ui.log.debug("Extra params: ", paramsIn)
     
     callbacks <- .processCallbackFunctions(paramsIn)
     

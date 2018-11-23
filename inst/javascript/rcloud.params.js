@@ -67,6 +67,7 @@
             return undefined;
           }
     }
+    
     // Schedules execution of a function within cell result processing loop to ensure that any UI element referenes used in the function
     // were added to the result pane.
     function executeInCellResultProcessingLoop(context_id, fun) {
@@ -268,42 +269,6 @@
           
           _varmap = url_utils.getQueryParams();
           k(null, _varmap);
-        },
-        // copied over from rcloud.web - need to be moved back to caps.R       
-        appendDiv: function (context_id, div, content, k) {
-            executeInCellResultProcessingLoop(context_id, function(result_div) {
-              if (_.isFunction(content)) content = content();
-              if (div) {
-                $(div).append(content);
-              } else {
-                result_div.append(content);
-              }
-            });
-            k(true);
-        },
-        prependDiv: function (context_id, div, content, k) {
-            executeInCellResultProcessingLoop(context_id, function(result_div) {
-              if (_.isFunction(content)) content = content();
-              if (div) {
-                $(div).prepend(content);
-              } else {
-                result_div.prepend(content);
-              }
-            });
-            k(true);
-        },
-        setDiv: function (context_id, div, content, k) {
-            executeInCellResultProcessingLoop(context_id, function(result_div) {
-              if (_.isFunction(content)) content = content();
-              if (div) {
-                $(div).empty();
-                $(div).append(content);
-              } else {
-                result_div.empty();
-                result_div.append(content);
-              }
-            });
-            k(true);
         },
         
         waitForReactiveForm:  function (context_id, form_id, k) {
