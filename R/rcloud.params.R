@@ -134,38 +134,68 @@ print.rcloud.params.param.set <- function(x, ..., view = interactive()) {
   # print shiny.tag
   print(x$content)
   
-  if (x$waitIfInvalid) {
-    if (x$reactive) {
-      # Only wait reactively if there is a submit event callback, otherwise synchronously validate the form and throw error if it is invalid
-      if (!is.null(x$callbacks$submit) && is.list(x$callbacks$submit) && length(x$callbacks$submit) > 0 && is.function(x$callbacks$submit[[1]])) {
-        waitForForm(x$name)
-      } else {
-        isValid <- validateForm(x$name)
-        if(!isValid) {
-          stop("Parameter values in form are invalid!")
-        }
-      }
-    } else {
-      controlValues <- waitForSynchronousForm(x$name)
-      .ui.log.debug("Result", controlValues)
-      if (!is.null(controlValues)) {
-        
-        lapply(controlValues, function(el) {
-          if (exists(el$name, .params)) {
-            control <- get(el$name, .params)
-            typedValue <- control$uiToRValueMapper(el$value)
-            assign(el$name, typedValue, envir=globalenv())
-          }
-        })
-        
-        if (!is.null(x$callbacks$submit) && is.list(x$callbacks$submit) && length(x$callbacks$submit) > 0 && is.function(x$callbacks$submit[[1]])) {
-          do.call(x$callbacks$submit[[1]], list(x$name, controlValues))
-        }
-      }
-    }
-    
-  }
+  .paramSetWaitCallback()(x)
+
   invisible(TRUE)
+}
+
+#' @export
+as.character.rcloud.params.param.set <- function(x, ...) {
+  as.character(x$content, ...)
+}
+
+#' @export
+rcw.set.paramSet <- function(where, what) {
+  rcw.set(where, as.character(what))
+  .paramSetWaitCallback()(what)
+}
+
+#' @export
+rcw.prepend.paramSet <- function(where, what) {
+  rcw.prepend(where, as.character(what))
+  .paramSetWaitCallback()(what)
+}
+
+#' @export
+rcw.append.paramSet <- function(where, what) {
+  rcw.append(where, as.character(what))
+  .paramSetWaitCallback()(what)
+}
+
+.paramSetWaitCallback <- function() {
+  function(x) {
+    if (x$waitIfInvalid) {
+      if (x$reactive) {
+        # Only wait reactively if there is a submit event callback, otherwise synchronously validate the form and throw error if it is invalid
+        if (!is.null(x$callbacks$submit) && is.list(x$callbacks$submit) && length(x$callbacks$submit) > 0 && is.function(x$callbacks$submit[[1]])) {
+          waitForForm(x$name)
+        } else {
+          isValid <- validateForm(x$name)
+          if(!isValid) {
+            stop("Parameter values in form are invalid!")
+          }
+        }
+      } else {
+        controlValues <- waitForSynchronousForm(x$name)
+        .ui.log.debug("Result", controlValues)
+        if (!is.null(controlValues)) {
+          
+          lapply(controlValues, function(el) {
+            if (exists(el$name, .params)) {
+              control <- get(el$name, .params)
+              typedValue <- control$uiToRValueMapper(el$value)
+              assign(el$name, typedValue, envir=globalenv())
+            }
+          })
+          
+          if (!is.null(x$callbacks$submit) && is.list(x$callbacks$submit) && length(x$callbacks$submit) > 0 && is.function(x$callbacks$submit[[1]])) {
+            do.call(x$callbacks$submit[[1]], list(x$name, controlValues))
+          }
+        }
+      }
+      
+    }
+  }
 }
 
 #' Display shiny tag without extra iframe

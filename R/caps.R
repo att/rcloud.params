@@ -26,7 +26,6 @@ validateForm <- function(form.id) {
 #'
 #'  Blocks execution and waits for submission of a form associated with the given group
 #' 
-#' 
 #' @export
 waitForSynchronousForm <- function(form.id) {
   frontend$waitForForm(Rserve.context(), form.id)

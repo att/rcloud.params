@@ -419,13 +419,13 @@ waitForForm('my-form')
 plot(c(fromVar:toVar)) 
 ```
 
-# Reactive Parameter Sets
+## Reactive Parameter Sets
 
-## Register Callback Function with Parameter Set
+### Register Callback Function with Parameter Set
 
 `rcloud.params` supports registering a common callback function to all parameters defined in a single parameter set.
 
-### Cell 1
+#### Cell 1
 ```{r}
 paramDiv(h1('Reactive parameter set'))
 
@@ -442,19 +442,19 @@ on.change = function(var_name, var_value, ...) {
 
 ```
 
-### Cell 2
+#### Cell 2
 ```{r}
 plot(c(fromVar:toVar))
 
 ```
 
-# Reactive Parameter Sets - Missing Variable
+## Reactive Parameter Sets - Missing Variable
 
-## Register Callback Function with Parameter Set
+### Register Callback Function with Parameter Set
 
 If a `on.submit` callback function is not defined for a paramSet and the form is invalid (due to missing values) an error will be produced.
 
-### Cell 1
+#### Cell 1
 ```{r}
 paramDiv(h1('Reactive parameter set'))
 
@@ -472,19 +472,19 @@ on.change = function(var_name, var_value, ...) {
 
 ```
 
-### Cell 2
+#### Cell 2
 ```{r}
 plot(c(fromVar:toVar))
 
 ```
 
-## Register Callbacks Dynamically
+### Register Callbacks Dynamically
 
 `rcloud.params` package allows for dynamic registration of callbacks to existing parameters. In the following example a callback function is registered for a single parameter (`toVar`) from a parameter set.
 
 > Note, to remove callbacks of a given type registered with a parameter use `removeCallbacks` 
 
-### Cell 1
+#### Cell 1
 ```{r}
 paramDiv(h1('Reactive parameter set'))
 
@@ -505,13 +505,13 @@ addCallback(toVar,  'change',  myCallback)
 
 ```
 
-### Cell 2
+#### Cell 2
 ```{r}
 plot(c(fromVar:toVar))
 
 ```
 
-# Blocking Form Example
+## Blocking Form Example
 
 The following code displays a parameters form which blocks notebook execution until values for all parameters are provided.
 
@@ -548,6 +548,76 @@ dateVar
 textVar
 
 ```
+
+## Mini Mode
+
+### Reactive Form
+
+```{r}
+library(rcloud.web)
+library(rcloud.params)
+
+rcw.result(
+    run = function(...) {
+        numVar <<- 10
+        textVar <<- "Default text"
+        rangeVar <<- 13
+        logicalVar <<- FALSE
+        params <- paramSet(
+                numericParam(numVar, min = -19, label = "Z value"),
+                selectParam(select, 'Select value', 
+                    choices = list('1' = "first", '2' = "second")), 
+                choiceParam(choice, 'Select value', multiple='multiple', 
+                    choices = list('1' = "first", '2' = "second")),
+                numericSliderParam(rangeVar, min = 1, max = 100, label = "Select value"),
+                logicalParam(logicalVar, 'Yes?', required = FALSE),
+                dateParam(dateVar, 'Date'),
+                textParam(textVar, label = "Text value"),
+                submitParam(name='submit1')
+                , on.submit = function(form.name, values, ...) {
+                 rcw.set('#result-div', values)   
+                }
+            )
+        rcw.set.paramSet('#form', params)
+    },
+    body = as.character(div(div(id='form'), div(id='result-div')))
+    ) 
+```
+
+### Blocking Form
+
+```{r}
+library(rcloud.web)
+library(rcloud.params)
+
+rcw.result(
+    run = function(...) {
+        numVar <<- 10
+        textVar <<- "Default text"
+        chck <<- FALSE
+        rangeVar <<- 33
+        params <- synchronousParamSet(div(
+            numericParam(numVar, min = -19, label = "Z value"),
+            selectParam(select, 'Select value', 
+                choices = list('1' = "first", '2' = "second")), 
+            choiceParam(choice, 'Select value', multiple='multiple', 
+                choices = list('1' = "first", '2' = "second")),
+            numericSliderParam(rangeVar, min = 1, max = 100, label = "Select value"),
+            logicalParam(chck, 'Yes?'),
+            dateParam(dateVar, 'Date'),
+            textParam(textVar, label = "Text value"),
+            submitParam(name='submit1')
+            ), on.submit = function(form.name, values, ...) {
+             rcw.set('#result-div', as.character(values))   
+            }
+        )
+        rcw.set.paramSet('#form', params)
+    },
+    body = as.character(div(div(id='form'), div(id='result-div')))
+    ) 
+
+```
+
 
 # API Details
 

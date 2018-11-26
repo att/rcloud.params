@@ -68,10 +68,18 @@
           }
     }
     
+    function isNotMini() {
+      return window.editor && window.shell;
+    }
+    
     // Schedules execution of a function within cell result processing loop to ensure that any UI element referenes used in the function
     // were added to the result pane.
     function executeInCellResultProcessingLoop(context_id, fun) {
-      RCloud.session.invoke_context_callback('function_call', context_id, fun);
+      if(isNotMini()) {
+        RCloud.session.invoke_context_callback('function_call', context_id, fun);
+      } else {
+        fun.apply(undefined);
+      }
     }
     
     function isValueProvided(control) {
@@ -317,7 +325,6 @@
                     form.find('button[type="submit"]').attr('disabled', 'disabled');
                   }));
               }
-              
           });
         },
         
